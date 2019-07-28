@@ -32,6 +32,41 @@ namespace PolynomialLibrary
 			return new MultivariatePolynomial(terms);
 		}
 
+		public static MultivariatePolynomial GetDerivative(MultivariatePolynomial poly, char symbol)
+		{
+			List<Term> resultTerms = new List<Term>();
+			foreach (Term term in poly.Terms)
+			{
+				if (term.Variables.Any() && term.Variables.Any(indt => indt.Symbol == symbol))
+				{
+					BigInteger newTerm_Coefficient = 0;
+					List<Indeterminate> newTerm_Variables = new List<Indeterminate>();
+
+					foreach (Indeterminate variable in term.Variables)
+					{
+						if (variable.Symbol == symbol)
+						{
+							newTerm_Coefficient = term.CoEfficient * variable.Exponent;
+
+							int newExponent = variable.Exponent - 1;
+							if (newExponent > 0)
+							{
+								newTerm_Variables.Add(new Indeterminate(symbol, newExponent));
+							}
+						}
+						else
+						{
+							newTerm_Variables.Add(variable.Clone());
+						}
+					}
+
+					resultTerms.Add(new Term(newTerm_Coefficient, newTerm_Variables.ToArray()));
+				}
+			}
+
+			return new MultivariatePolynomial(resultTerms.ToArray());
+		}
+
 		#endregion
 
 		#region Evaluate
