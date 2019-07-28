@@ -154,6 +154,32 @@ namespace PolynomialLibrary
 			return new MultivariatePolynomial(resultTerms.ToArray());
 		}
 
+		public static MultivariatePolynomial Pow(MultivariatePolynomial poly, int exponent)
+		{
+			if (exponent < 0)
+			{
+				throw new NotImplementedException("Raising a polynomial to a negative exponent not supported.");
+			}
+			else if (exponent == 0)
+			{
+				return new MultivariatePolynomial(new Term[] { new Term(1, new Indeterminate[] { }) });
+			}
+			else if (exponent == 1)
+			{
+				return poly.Clone();
+			}
+
+			MultivariatePolynomial result = poly.Clone();
+
+			int counter = exponent - 1;
+			while (counter != 0)
+			{
+				result = MultivariatePolynomial.Multiply(result, poly);
+				counter -= 1;
+			}
+			return result;
+		}
+
 		#endregion
 
 		#region Overrides and Interface implementations
