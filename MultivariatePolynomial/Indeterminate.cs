@@ -1,18 +1,24 @@
 ﻿using System;
 using System.Linq;
+using System.Numerics;
 using System.Collections.Generic;
 
 namespace PolynomialLibrary
 {
-	public class Indeterminate : IEquatable<Indeterminate>, IEqualityComparer<Indeterminate>
+	public class Indeterminate : ICloneable<Indeterminate>, IEquatable<Indeterminate>, IEqualityComparer<Indeterminate>
 	{
 		public char Symbol { get; }
 		public int Exponent { get; }
+
+		private BigInteger? IndeterminateValue { get; set; }
+
+		#region Constructor & Parse
 
 		public Indeterminate(char symbol, int exponent)
 		{
 			Symbol = symbol;
 			Exponent = exponent;
+			IndeterminateValue = null;
 		}
 
 		internal static Indeterminate Parse(string input)
@@ -34,7 +40,29 @@ namespace PolynomialLibrary
 			return new Indeterminate(symbol, exponent);
 		}
 
+		#endregion
+
+		#region Evaluate
+
+		public void SetValue(BigInteger value)
+		{
+			IndeterminateValue = value;
+		}
+
+		public BigInteger Evaluate()
+		{
+			if (!IndeterminateValue.HasValue) { throw new Exception("Value of indeterminate not set. Set the value of the indeterminate before attempting to evaluate."); }
+			return BigInteger.Pow(IndeterminateValue.Value, Exponent);
+		}
+
+		#endregion
+
 		#region Overrides and Interface implementations
+
+		public Indeterminate Clone()
+		{
+			return new Indeterminate(this.Symbol, this.Exponent);
+		}
 
 		public bool Equals(Indeterminate other)
 		{
