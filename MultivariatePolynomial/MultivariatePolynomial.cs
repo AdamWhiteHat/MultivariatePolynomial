@@ -8,7 +8,12 @@ namespace PolynomialLibrary
 
 	public class MultivariatePolynomial
 	{
+		public static MultivariatePolynomial Zero = MultivariatePolynomial.Parse("0");
+		public static MultivariatePolynomial One = MultivariatePolynomial.Parse("1");
+
 		public Term[] Terms { get; private set; }
+
+		public int Degree { get { return Terms.Max(trm => trm.Variables.Max(v => v.Exponent)); } }
 
 		#region Constructor & Parse
 
@@ -23,6 +28,7 @@ namespace PolynomialLibrary
 			if (string.IsNullOrWhiteSpace(input)) { throw new ArgumentException(); }
 
 			string inputString = input.Replace(" ", "").Replace("-", "+-");
+			if (inputString.StartsWith("+-")) { inputString = new string(inputString.Skip(1).ToArray()); }
 			string[] stringTerms = inputString.Split(new char[] { '+' });
 
 			if (!stringTerms.Any()) { throw new FormatException(); }
@@ -73,11 +79,12 @@ namespace PolynomialLibrary
 
 		public BigInteger Evaluate(List<Tuple<char, BigInteger>> indeterminateValues)
 		{
-			foreach (Term term in Terms)
-			{
-				term.SetIndeterminateValues(indeterminateValues);
-			}
+			SetIndeterminateValues(indeterminateValues);
+			return Evaluate();
+		}
 
+		public BigInteger Evaluate()
+		{
 			BigInteger result = new BigInteger(0);
 			foreach (Term term in Terms)
 			{
@@ -86,10 +93,61 @@ namespace PolynomialLibrary
 			return result;
 		}
 
+		public void SetIndeterminateValues(List<Tuple<char, BigInteger>> indeterminateValues)
+		{
+			foreach (Term term in Terms)
+			{
+				term.SetIndeterminateValues(indeterminateValues);
+			}
+		}
+
 		#endregion
 
 		#region Arithmetic
+				
+		public static MultivariatePolynomial GCD(MultivariatePolynomial left, MultivariatePolynomial right)
+		{
+			MultivariatePolynomial a = left.Clone();
+			MultivariatePolynomial b = right.Clone();
 
+			var bTermsSymbolsDict = b.Terms.ToDictionary(key => Term.GetDistinctTermSymbols(key), val => val);
+						
+			List<Term> newTerms = new List<Term>();
+			foreach (Term trm in a.Terms)
+			{
+				string trmSymbols = Term.GetDistinctTermSymbols(trm);
+
+				if (bTermsSymbolsDict.ContainsKey(trmSymbols))
+				{
+					Term otherTerm = bTermsSymbolsDict[trmSymbols];
+
+					if (trm.Variables.Length != otherTerm.Variables.Length) { throw new Exception(); }
+
+					int max = trm.Variables.Length;
+					int index = 0;
+
+					List<Indeterminate> newVariables = new List<Indeterminate>();
+
+					while (index < max)
+					{
+						if (trm.Variables[index].Symbol != otherTerm.Variables[index].Symbol) { throw new Exception(); }
+
+						int minExp = Math.Min(trm.Variables[index].Exponent, otherTerm.Variables[index].Exponent);
+
+						newVariables.Add(new Indeterminate(trm.Variables[index].Symbol, minExp));
+
+						index++;
+					}
+
+					BigInteger gcdCoefficient = BigInteger.GreatestCommonDivisor(trm.CoEfficient, otherTerm.CoEfficient);
+
+					newTerms.Add( new Term(gcdCoefficient, newVariables.ToArray()) );
+				}
+			}
+			
+			return new MultivariatePolynomial(newTerms.ToArray());
+		}
+		
 		public static MultivariatePolynomial Add(MultivariatePolynomial left, MultivariatePolynomial right)
 		{
 			return OneToOneArithmetic(left, right, Term.Add);
@@ -153,7 +211,7 @@ namespace PolynomialLibrary
 
 			return new MultivariatePolynomial(resultTerms.ToArray());
 		}
-
+		
 		public static MultivariatePolynomial Pow(MultivariatePolynomial poly, int exponent)
 		{
 			if (exponent < 0)

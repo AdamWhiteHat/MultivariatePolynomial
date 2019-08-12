@@ -77,12 +77,17 @@ namespace PolynomialLibrary
 		{
 			if (Variables.Any())
 			{
-				return BigInteger.Multiply(CoEfficient, Variables.Select(indt => indt.Evaluate()).Aggregate(BigInteger.Multiply) );
+				return BigInteger.Multiply(CoEfficient, Variables.Select(indt => indt.Evaluate()).Aggregate(BigInteger.Multiply));
 			}
 			else
 			{
 				return CoEfficient;
 			}
+		}
+
+		internal static string GetDistinctTermSymbols(Term term)
+		{
+			return new string(term.Variables.Select(v => v.Symbol).ToArray());
 		}
 
 		#endregion
@@ -142,6 +147,30 @@ namespace PolynomialLibrary
 			resultVariables = resultVariables.OrderBy(indt => indt.Symbol).ThenBy(indt => indt.Exponent).ToList();
 
 			return new Term(resultCoefficient, resultVariables.ToArray());
+		}
+
+		public static Term Divide(Term left, Term right)
+		{
+			if (left.Variables.Length != right.Variables.Length) { throw new ArgumentException("Terms are incompatible (variable counts do not match)!"); }
+			if (Term.GetDistinctTermSymbols(left) != Term.GetDistinctTermSymbols(right)) { throw new ArgumentException("Terms are incompatible (variable symbols do not match)!"); }
+			if (left.CoEfficient % right.CoEfficient == 0) { throw new ArgumentException("right.Coefficient is not a multiple of left.Coefficient"); }
+
+
+			BigInteger newCoefficient = BigInteger.Divide(left.CoEfficient, right.CoEfficient);
+
+			List<Indeterminate> newVariables = new List<Indeterminate>();
+
+			int max = left.Variables.Length;
+			int index = 0;
+			while (index < max)
+			{
+				if (left.Variables[index].Symbol != right.Variables[index].Symbol) { throw new Exception(); }
+				int newExponent = left.Variables[index].Exponent - right.Variables[index].Exponent;
+				newVariables.Add(new Indeterminate(left.Variables[index].Symbol, newExponent));
+				index++;
+			}
+
+			return new Term(newCoefficient, newVariables.ToArray());
 		}
 
 		#endregion
