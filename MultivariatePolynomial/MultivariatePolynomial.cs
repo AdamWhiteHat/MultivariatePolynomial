@@ -5,21 +5,18 @@ using System.Collections.Generic;
 
 namespace PolynomialLibrary
 {
-
 	public class MultivariatePolynomial
 	{
-		public static MultivariatePolynomial Zero = MultivariatePolynomial.Parse("0");
-		public static MultivariatePolynomial One = MultivariatePolynomial.Parse("1");
-
 		public Term[] Terms { get; private set; }
-
-		public int Degree { get { return Terms.Max(trm => trm.Variables.Max(v => v.Exponent)); } }
+		public int Degree { get { return Terms.Any() ? Terms.Select(t => t.Degree).Max() : 0; } }
 
 		#region Constructor & Parse
 
 		public MultivariatePolynomial(Term[] terms)
 		{
-			Terms = terms;
+			IEnumerable<Term> clonedTerms = CloneHelper<Term>.CloneCollection(terms);
+			var orderedTerms = clonedTerms.OrderByDescending(t => t.Degree);
+			Terms = orderedTerms.ToArray();
 		}
 
 		public static MultivariatePolynomial Parse(string polynomialString)
@@ -73,6 +70,21 @@ namespace PolynomialLibrary
 			return new MultivariatePolynomial(resultTerms.ToArray());
 		}
 
+		internal bool HasVariables()
+		{
+			return this.Terms.Any(t => t.HasVariable());
+		}
+
+		internal BigInteger MaxCoefficient()
+		{
+			if (HasVariables())
+			{
+				var termsWithVariables = this.Terms.Select(t => t).Where(t => t.HasVariable());
+				return termsWithVariables.Select(t => t.CoEfficient).Max();
+			}
+			return -1;
+		}
+
 		#endregion
 
 		#region Evaluate
@@ -104,50 +116,46 @@ namespace PolynomialLibrary
 		#endregion
 
 		#region Arithmetic
-				
+
 		public static MultivariatePolynomial GCD(MultivariatePolynomial left, MultivariatePolynomial right)
 		{
-			MultivariatePolynomial a = left.Clone();
-			MultivariatePolynomial b = right.Clone();
+			MultivariatePolynomial minuend = left.Clone();
+			MultivariatePolynomial subtrahend = right.Clone();
+			MultivariatePolynomial difference;
+			BigInteger minuendMaxCoefficient = 0;
+			BigInteger subtrahendMaxCoefficient = 0;
+			BigInteger differenceMaxCoefficient = 0;
 
-			var bTermsSymbolsDict = b.Terms.ToDictionary(key => Term.GetDistinctTermSymbols(key), val => val);
-						
-			List<Term> newTerms = new List<Term>();
-			foreach (Term trm in a.Terms)
+			do
 			{
-				string trmSymbols = Term.GetDistinctTermSymbols(trm);
+				minuendMaxCoefficient = minuend.MaxCoefficient();
+				subtrahendMaxCoefficient = subtrahend.MaxCoefficient();
+				difference = MultivariatePolynomial.Subtract(minuend, subtrahend).Clone();
+				differenceMaxCoefficient = difference.MaxCoefficient();
 
-				if (bTermsSymbolsDict.ContainsKey(trmSymbols))
+				if (minuendMaxCoefficient > subtrahendMaxCoefficient && subtrahendMaxCoefficient > differenceMaxCoefficient)
 				{
-					Term otherTerm = bTermsSymbolsDict[trmSymbols];
-
-					if (trm.Variables.Length != otherTerm.Variables.Length) { throw new Exception(); }
-
-					int max = trm.Variables.Length;
-					int index = 0;
-
-					List<Indeterminate> newVariables = new List<Indeterminate>();
-
-					while (index < max)
-					{
-						if (trm.Variables[index].Symbol != otherTerm.Variables[index].Symbol) { throw new Exception(); }
-
-						int minExp = Math.Min(trm.Variables[index].Exponent, otherTerm.Variables[index].Exponent);
-
-						newVariables.Add(new Indeterminate(trm.Variables[index].Symbol, minExp));
-
-						index++;
-					}
-
-					BigInteger gcdCoefficient = BigInteger.GreatestCommonDivisor(trm.CoEfficient, otherTerm.CoEfficient);
-
-					newTerms.Add( new Term(gcdCoefficient, newVariables.ToArray()) );
+					minuend = subtrahend.Clone();
+					subtrahend = difference.Clone();
+				}
+				else if (differenceMaxCoefficient > subtrahendMaxCoefficient)
+				{
+					//minuend = subtrahend.Clone();
+					subtrahend = difference.Clone();
 				}
 			}
-			
-			return new MultivariatePolynomial(newTerms.ToArray());
+			while (minuendMaxCoefficient > 0 && subtrahendMaxCoefficient > 0 && minuend.HasVariables() && subtrahend.HasVariables());
+
+			if (minuend.HasVariables())
+			{
+				return subtrahend.Clone();
+			}
+			else
+			{
+				return minuend.Clone();
+			}
 		}
-		
+
 		public static MultivariatePolynomial Add(MultivariatePolynomial left, MultivariatePolynomial right)
 		{
 			return OneToOneArithmetic(left, right, Term.Add);
@@ -164,19 +172,24 @@ namespace PolynomialLibrary
 
 			foreach (Term rightTerm in right.Terms)
 			{
-				var match = leftTermsList.Where(leftTerm => Term.AreCompatable(leftTerm, rightTerm));
-
+				var match = leftTermsList.Where(leftTerm => Term.AreIdentical(leftTerm, rightTerm));
 				if (match.Any())
 				{
 					Term matchTerm = match.Single();
 					leftTermsList.Remove(matchTerm);
 
-					Term sum = operation.Invoke(matchTerm, rightTerm);
-					leftTermsList.Add(sum);
+					Term result = operation.Invoke(matchTerm, rightTerm);
+					if (result.CoEfficient != 0)
+					{
+						if (!leftTermsList.Any(lt => lt.Equals(result)))
+						{
+							leftTermsList.Add(result);
+						}
+					}
 				}
 				else
 				{
-					leftTermsList.Add(rightTerm);
+					leftTermsList.Add(Term.Negate(rightTerm));
 				}
 			}
 			return new MultivariatePolynomial(leftTermsList.ToArray());
@@ -193,7 +206,7 @@ namespace PolynomialLibrary
 					Term newTerm = Term.Multiply(leftTerm, rightTerm);
 
 					// Combine like terms
-					var likeTerms = resultTerms.Where(trm => Term.AreCompatable(newTerm, trm));
+					var likeTerms = resultTerms.Where(trm => Term.AreIdentical(newTerm, trm));
 					if (likeTerms.Any())
 					{
 						resultTerms = resultTerms.Except(likeTerms).ToList();
@@ -211,7 +224,7 @@ namespace PolynomialLibrary
 
 			return new MultivariatePolynomial(resultTerms.ToArray());
 		}
-		
+
 		public static MultivariatePolynomial Pow(MultivariatePolynomial poly, int exponent)
 		{
 			if (exponent < 0)
@@ -220,7 +233,7 @@ namespace PolynomialLibrary
 			}
 			else if (exponent == 0)
 			{
-				return new MultivariatePolynomial(new Term[] { new Term(1, new Indeterminate[] { }) });
+				return new MultivariatePolynomial(new Term[] { new Term(1, new Indeterminate[0]) });
 			}
 			else if (exponent == 1)
 			{
@@ -235,21 +248,125 @@ namespace PolynomialLibrary
 				result = MultivariatePolynomial.Multiply(result, poly);
 				counter -= 1;
 			}
-			return result;
+			return new MultivariatePolynomial(result.Terms);
+		}
+
+		public static MultivariatePolynomial Divide(MultivariatePolynomial left, MultivariatePolynomial right)
+		{
+			List<Term> newTermsList = new List<Term>();
+			List<Term> leftTermsList = CloneHelper<Term>.CloneCollection(left.Terms).ToList();
+
+			foreach (Term rightTerm in right.Terms)
+			{
+				var matches = leftTermsList.Where(leftTerm => Term.ShareCommonFactor(leftTerm, rightTerm)).ToList();
+				if (matches.Any())
+				{
+					foreach (Term matchTerm in matches)
+					{
+						leftTermsList.Remove(matchTerm);
+						Term result = Term.Divide(matchTerm, rightTerm);
+						if (result != Term.Empty)
+						{
+							if (!newTermsList.Any(lt => lt.Equals(result)))
+							{
+								newTermsList.Add(result);
+							}
+						}
+					}
+				}
+				else
+				{
+					///newTermsList.Add(rightTerm);
+				}
+			}
+			return new MultivariatePolynomial(newTermsList.ToArray());
 		}
 
 		#endregion
 
 		#region Overrides and Interface implementations
-
 		public MultivariatePolynomial Clone()
 		{
 			return new MultivariatePolynomial(CloneHelper<Term>.CloneCollection(Terms).ToArray());
 		}
 
+		public bool Equals(MultivariatePolynomial other)
+		{
+			return this.Equals(this, other);
+		}
+
+		public bool Equals(MultivariatePolynomial x, MultivariatePolynomial y)
+		{
+			if (x == null) { return (y == null) ? true : false; }
+			if (!x.Terms.Any()) { return (!y.Terms.Any()) ? true : false; }
+			if (x.Terms.Length != y.Terms.Length) { return false; }
+			if (x.Degree != y.Degree) { return false; }
+
+			int index = 0;
+			foreach (Term term in x.Terms)
+			{
+				if (!term.Equals(y.Terms[index++])) { return false; }
+			}
+			return true;
+		}
+
+		public override bool Equals(object obj)
+		{
+			return this.Equals(obj as MultivariatePolynomial);
+		}
+
+		public int GetHashCode(MultivariatePolynomial obj)
+		{
+			return obj.GetHashCode();
+		}
+
+		public override int GetHashCode()
+		{
+			int hashCode = System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
+			if (Terms.Any())
+			{
+				foreach (var term in Terms)
+				{
+					hashCode = Term.CombineHashCodes(hashCode, term.GetHashCode());
+				}
+			}
+			return hashCode;
+		}
+
 		public override string ToString()
 		{
-			return string.Join(" + ", Terms.Select(trm => trm.ToString())).Replace("+ -", "- ");
+			bool isFirstPass = true;
+			string signString = string.Empty;
+			string termString = string.Empty;
+			string result = string.Empty;
+
+			foreach (Term term in Terms)
+			{
+				signString = string.Empty;
+				termString = string.Empty;
+
+				if (isFirstPass)
+				{
+					isFirstPass = false;
+				}
+				else
+				{
+					if (term.CoEfficient.Sign == -1)
+					{
+						signString = $" - ";
+					}
+					else if (term.CoEfficient.Sign == 1)
+					{
+						signString = $" + ";
+					}
+				}
+
+				termString = term.ToString();
+
+				result += $"{signString}{termString}";
+			}
+
+			return result;
 		}
 
 		#endregion

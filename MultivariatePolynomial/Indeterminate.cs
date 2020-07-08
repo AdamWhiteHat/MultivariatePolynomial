@@ -77,9 +77,19 @@ namespace PolynomialLibrary
 			return true;
 		}
 
+		public override bool Equals(object obj)
+		{
+			return this.Equals(obj as Indeterminate);
+		}
+
 		public int GetHashCode(Indeterminate obj)
 		{
-			return obj.ToString().GetHashCode();
+			return obj.GetHashCode();
+		}
+
+		public override int GetHashCode()
+		{
+			return new Tuple<char, int>(Symbol, Exponent).GetHashCode();
 		}
 
 		public override string ToString()
