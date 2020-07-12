@@ -14,9 +14,8 @@ namespace PolynomialLibrary
 
 		public MultivariatePolynomial(Term[] terms)
 		{
-			IEnumerable<Term> clonedTerms = CloneHelper<Term>.CloneCollection(terms);
-			var orderedTerms = clonedTerms.OrderByDescending(t => t.Degree);
-			Terms = orderedTerms.ToArray();
+			Terms = CloneHelper<Term>.CloneCollection(terms).ToArray();
+			OrderMonomials();
 		}
 
 		public static MultivariatePolynomial Parse(string polynomialString)
@@ -70,16 +69,24 @@ namespace PolynomialLibrary
 			return new MultivariatePolynomial(resultTerms.ToArray());
 		}
 
+		private void OrderMonomials()
+		{
+			var orderedTerms = Terms.OrderByDescending(t => t.Degree);
+			orderedTerms = orderedTerms.ThenBy(t => t.VariableCount());
+			orderedTerms = orderedTerms.ThenByDescending(t => t.CoEfficient);
+			Terms = orderedTerms.ToArray();
+		}
+
 		internal bool HasVariables()
 		{
-			return this.Terms.Any(t => t.HasVariable());
+			return this.Terms.Any(t => t.HasVariables());
 		}
 
 		internal BigInteger MaxCoefficient()
 		{
 			if (HasVariables())
 			{
-				var termsWithVariables = this.Terms.Select(t => t).Where(t => t.HasVariable());
+				var termsWithVariables = this.Terms.Select(t => t).Where(t => t.HasVariables());
 				return termsWithVariables.Select(t => t.CoEfficient).Max();
 			}
 			return -1;

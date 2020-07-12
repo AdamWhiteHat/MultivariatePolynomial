@@ -73,9 +73,21 @@ namespace PolynomialLibrary
 			return true;
 		}
 
-		internal bool HasVariable()
+		internal bool HasVariables()
 		{
 			return Variables.Any();
+		}
+
+		internal int VariableCount()
+		{
+			if (!HasVariables())
+			{
+				return 0;
+			}
+			else
+			{
+				return Variables.Length;
+			}
 		}
 
 		#endregion

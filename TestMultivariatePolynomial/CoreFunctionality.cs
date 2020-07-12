@@ -23,7 +23,7 @@ namespace TestMultivariatePolynomial
 				"2*X^4 + 13*X^3 + 29*X^2 + 29*X + 13",
 				"w^2*x*y + w*x + w*y + 1",
 				"144*x*y + 12*x + 12*y + 1",
-				"144*x*y - 12*x + 12*y - 1",
+				"144*x*y + 12*y - 12*x - 1",
 				"144*x*y - 12*x - 12*y - 1",
 				"144*x*y - 12*x - 12*y",
 				"144*x",
@@ -65,6 +65,19 @@ namespace TestMultivariatePolynomial
 
 			TestContext.WriteLine($"Result: \"{actual}\".");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Evaluate({polyString}) where {string.Join(" and ", indeterminants.Select(tup => $"{tup.Item1} = {tup.Item2}"))}");
+		}
+
+		[TestMethod]
+		public void TestMonomialOrdering()
+		{
+			string toParse = "3*X^2*Y^3 + 6*X* Y^4 + X^3*Y^2 + 4*X^5 - 6*X^2*Y + 3*X* Y*Z - 5*X^2 + 3*Y^3 + 24*X* Y - 4";
+			string expected = "4*X^5 + 6*X*Y^4 + 3*X^2*Y^3 + X^3*Y^2 + 3*Y^3 - 6*X^2*Y + 3*X*Y*Z - 5*X^2 + 24*X*Y - 4";
+
+			MultivariatePolynomial poly = MultivariatePolynomial.Parse(toParse);
+			string actual = poly.ToString();
+
+			TestContext.WriteLine($"Result: \"{actual}\".");
+			Assert.AreEqual(expected, actual, $"Test of: Monomial Ordering");
 		}
 	}
 }
