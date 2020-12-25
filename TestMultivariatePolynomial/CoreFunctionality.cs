@@ -13,6 +13,23 @@ namespace TestMultivariatePolynomial
 		private TestContext m_testContext;
 		public TestContext TestContext { get { return m_testContext; } set { m_testContext = value; } }
 
+
+		[TestMethod]
+		public void TestParse001()
+		{
+			string toTest = "X*Y*Z^2 + Y*Z - X*Z - 268179*Z";
+
+			MultivariatePolynomial testPolynomial = MultivariatePolynomial.Parse(toTest);
+
+			string expected = toTest;//.Replace(" ", "");
+			string actual = testPolynomial.ToString();//.Replace(" ", "");
+			bool isMatch = (expected == actual);
+			string passFailString = isMatch ? "PASS" : "FAIL";
+			string inputOutputString = isMatch ? $"Polynomial: \'{testPolynomial.ToString()}\"" : $"Expected: \"{expected}\"; Actual: \"{actual}\"";
+			TestContext.WriteLine($"Pass/Fail: \"{passFailString}\" {inputOutputString}");
+			Assert.AreEqual(expected, actual, $"MultivariatePolynomial.Parse(\"{toTest}\").ToString();");
+		}
+
 		[TestMethod]
 		public void TestParseAndToString()
 		{

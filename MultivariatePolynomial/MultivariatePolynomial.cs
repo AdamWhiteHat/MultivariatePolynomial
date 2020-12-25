@@ -71,9 +71,13 @@ namespace PolynomialLibrary
 
 		private void OrderMonomials()
 		{
-			var orderedTerms = Terms.OrderByDescending(t => t.Degree);
-			orderedTerms = orderedTerms.ThenBy(t => t.VariableCount());
-			orderedTerms = orderedTerms.ThenByDescending(t => t.CoEfficient);
+			var orderedTerms = Terms.OrderBy(t => t.Degree); // First by degree
+			orderedTerms = orderedTerms.ThenByDescending(t => t.VariableCount()); // Then by variable count
+			orderedTerms = orderedTerms.ThenBy(t => t.CoEfficient); // Then by coefficient value
+			orderedTerms = orderedTerms.
+				ThenByDescending(t =>
+					new string(t.Variables.OrderBy(v => v.Symbol).Select(v => v.Symbol).ToArray())
+				); // Lastly, lexicographic order of variables. Descending order because zero degree terms (smaller stuff) goes first.
 			Terms = orderedTerms.ToArray();
 		}
 
@@ -347,7 +351,7 @@ namespace PolynomialLibrary
 			string termString = string.Empty;
 			string result = string.Empty;
 
-			foreach (Term term in Terms)
+			foreach (Term term in Terms.Reverse())
 			{
 				signString = string.Empty;
 				termString = string.Empty;
