@@ -92,45 +92,6 @@ namespace PolynomialLibrary
 
 		#endregion
 
-		#region Evaluate
-
-		public void SetIndeterminateValues(List<Tuple<char, BigInteger>> indeterminateValues)
-		{
-			foreach (Tuple<char, BigInteger> indeterminateValue in indeterminateValues)
-			{
-				var matches = Variables.Where(indt => indt.Symbol == indeterminateValue.Item1);
-				if (matches.Any())
-				{
-					Indeterminate match = matches.Single();
-					match.SetValue(indeterminateValue.Item2);
-				}
-			}
-		}
-
-		public BigInteger Evaluate()
-		{
-			if (Variables.Any())
-			{
-				return BigInteger.Multiply(CoEfficient, Variables.Select(indt => indt.Evaluate()).Aggregate(BigInteger.Multiply));
-			}
-			else
-			{
-				return CoEfficient.Clone(); ;
-			}
-		}
-
-		internal static string GetDistinctTermSymbols(Term term)
-		{
-			var termVariables = term.Variables.Select(v => $"{v.Symbol}^{v.Exponent}").ToList();
-			if (!termVariables.Any())
-			{
-				termVariables.Add("1");
-			}
-			return string.Join("*", termVariables);
-		}
-
-		#endregion
-
 		#region Arithmetic
 
 		public static Term Add(Term left, Term right)

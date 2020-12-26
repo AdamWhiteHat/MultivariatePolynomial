@@ -102,26 +102,27 @@ namespace PolynomialLibrary
 
 		public BigInteger Evaluate(List<Tuple<char, BigInteger>> indeterminateValues)
 		{
-			SetIndeterminateValues(indeterminateValues);
-			return Evaluate();
-		}
-
-		public BigInteger Evaluate()
-		{
 			BigInteger result = new BigInteger(0);
 			foreach (Term term in Terms)
 			{
-				result = BigInteger.Add(result, term.Evaluate());
+				BigInteger termValue = term.CoEfficient.Clone();
+
+				if (term.Variables.Any())
+				{
+					var variableValues =
+						term.Variables
+						.Select(indetrmnt =>
+							indeterminateValues.Where(tup => tup.Item1 == indetrmnt.Symbol)
+											  .Select(tup => BigInteger.Pow(tup.Item2, indetrmnt.Exponent))
+											  .Single()
+						);
+
+					termValue = BigInteger.Multiply(termValue, variableValues.Aggregate(BigInteger.Multiply));
+				}
+
+				result = BigInteger.Add(result, termValue);
 			}
 			return result;
-		}
-
-		public void SetIndeterminateValues(List<Tuple<char, BigInteger>> indeterminateValues)
-		{
-			foreach (Term term in Terms)
-			{
-				term.SetIndeterminateValues(indeterminateValues);
-			}
 		}
 
 		#endregion

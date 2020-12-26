@@ -42,21 +42,6 @@ namespace PolynomialLibrary
 
 		#endregion
 
-		#region Evaluate
-
-		public void SetValue(BigInteger value)
-		{
-			IndeterminateValue = value;
-		}
-
-		public BigInteger Evaluate()
-		{
-			if (!IndeterminateValue.HasValue) { throw new Exception("Value of indeterminate not set. Set the value of the indeterminate before attempting to evaluate."); }
-			return BigInteger.Pow(IndeterminateValue.Value, Exponent);
-		}
-
-		#endregion
-
 		#region Overrides and Interface implementations
 
 		public Indeterminate Clone()
