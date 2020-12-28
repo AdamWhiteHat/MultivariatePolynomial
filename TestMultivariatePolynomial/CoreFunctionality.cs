@@ -66,7 +66,7 @@ namespace TestMultivariatePolynomial
 		}
 
 		[TestMethod]
-		public void TestEvaluate()
+		public void TestEvaluate_BigInteger()
 		{
 			BigInteger expected = BigInteger.Parse("104053773133");
 
@@ -79,6 +79,25 @@ namespace TestMultivariatePolynomial
 			};
 
 			BigInteger actual = poly.Evaluate(indeterminants);
+
+			TestContext.WriteLine($"Result: \"{actual}\".");
+			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Evaluate({polyString}) where {string.Join(" and ", indeterminants.Select(tup => $"{tup.Item1} = {tup.Item2}"))}");
+		}
+
+		[TestMethod]
+		public void TestEvaluate_Double()
+		{
+			double expected = 104053773133;
+
+			string polyString = "36*x*y - 6*x - 6*y + 1";
+			MultivariatePolynomial poly = MultivariatePolynomial.Parse(polyString);
+			List<Tuple<char, double>> indeterminants = new List<Tuple<char, double>>()
+			{
+				new Tuple<char, double>('x', 45468),
+				new Tuple<char, double>('y', 63570),
+			};
+
+			double actual = poly.Evaluate(indeterminants);
 
 			TestContext.WriteLine($"Result: \"{actual}\".");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Evaluate({polyString}) where {string.Join(" and ", indeterminants.Select(tup => $"{tup.Item1} = {tup.Item2}"))}");

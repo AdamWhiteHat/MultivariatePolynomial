@@ -125,6 +125,31 @@ namespace PolynomialLibrary
 			return result;
 		}
 
+		public double Evaluate(List<Tuple<char, double>> indeterminateValues)
+		{
+			double result = 0;
+			foreach (Term term in Terms)
+			{
+				double termValue = (double)term.CoEfficient.Clone();
+
+				if (term.Variables.Any())
+				{
+					var variableValues =
+						term.Variables
+						.Select(indetrmnt =>
+							indeterminateValues.Where(tup => tup.Item1 == indetrmnt.Symbol)
+											  .Select(tup => Math.Pow(tup.Item2, indetrmnt.Exponent))
+											  .Single()
+						);
+
+					termValue *= variableValues.Aggregate((l, r) => l * r);
+				}
+
+				result += termValue;
+			}
+			return result;
+		}
+
 		#endregion
 
 		#region Arithmetic
