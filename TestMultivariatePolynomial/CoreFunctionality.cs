@@ -13,7 +13,6 @@ namespace TestMultivariatePolynomial
 		private TestContext m_testContext;
 		public TestContext TestContext { get { return m_testContext; } set { m_testContext = value; } }
 
-
 		[TestMethod]
 		public void TestParse001()
 		{
@@ -28,6 +27,47 @@ namespace TestMultivariatePolynomial
 			string inputOutputString = isMatch ? $"Polynomial: \'{testPolynomial.ToString()}\"" : $"Expected: \"{expected}\"; Actual: \"{actual}\"";
 			TestContext.WriteLine($"Pass/Fail: \"{passFailString}\" {inputOutputString}");
 			Assert.AreEqual(expected, actual, $"MultivariatePolynomial.Parse(\"{toTest}\").ToString();");
+		}
+
+		[TestMethod]
+		public void TestInstantiateZeroCoefficient()
+		{
+			Indeterminate indt = new Indeterminate('X', 2);
+			Term term = new Term(0, new Indeterminate[] { indt });
+
+			MultivariatePolynomial testPolynomial = new MultivariatePolynomial(new Term[] { term });
+			string expected = "0";
+			string actual = testPolynomial.ToString();
+			Assert.AreEqual(expected, actual, $"Expected: \"{expected}\"; Actual: \"{actual}\"");
+		}
+
+		[TestMethod]
+		public void TestInstantiateEmpty()
+		{
+			MultivariatePolynomial testPolynomial = new MultivariatePolynomial(new Term[0]);
+			string expected = "0";
+			string actual = testPolynomial.ToString();
+			Assert.AreEqual(expected, actual, $"Expected: \"{expected}\"; Actual: \"{actual}\"");
+		}
+
+		[TestMethod]
+		public void TestInstantiateNull()
+		{
+			MultivariatePolynomial testPolynomial = new MultivariatePolynomial(null);
+			string expected = "0";
+			string actual = testPolynomial.ToString();
+			Assert.AreEqual(expected, actual, $"Expected: \"{expected}\"; Actual: \"{actual}\"");
+		}
+
+		[TestMethod]
+		public void TestNumericIndeterminateSymbol()
+		{
+			Action instantiateSymbol = new Action(() =>
+			{
+				Indeterminate indeterminate = new Indeterminate('2', 1);
+			});
+
+			Assert.ThrowsException<ArgumentException>(instantiateSymbol);
 		}
 
 		[TestMethod]

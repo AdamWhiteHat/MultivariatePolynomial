@@ -12,6 +12,7 @@ namespace PolynomialLibrary
 		public int Degree { get { return Variables.Any() ? Variables.Select(v => v.Exponent).Sum() : 0; } }
 
 		public static Term Empty = new Term(BigInteger.Zero, new Indeterminate[0]);
+		internal static Term Zero = new Term(BigInteger.Zero, new Indeterminate[] { new Indeterminate('X', 0) });
 
 		#region Constructor & Parse
 
@@ -242,10 +243,16 @@ namespace PolynomialLibrary
 
 		public override string ToString()
 		{
+			if (CoEfficient == 0)
+			{
+				return "0";
+			}
+
 			string signString = string.Empty;
 			string coefficientString = string.Empty;
 			string variableString = string.Empty;
 			string multiplyString = string.Empty;
+					
 			if (Variables.Any())
 			{
 				variableString = string.Join("*", Variables.Select(v => v.ToString()));

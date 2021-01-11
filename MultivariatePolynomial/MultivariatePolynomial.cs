@@ -14,7 +14,14 @@ namespace PolynomialLibrary
 
 		public MultivariatePolynomial(Term[] terms)
 		{
-			Terms = CloneHelper<Term>.CloneCollection(terms).ToArray();
+			IEnumerable<Term> newTerms = terms?.Where(trm => trm.CoEfficient != 0) ?? new Term[0];
+			if (!newTerms.Any())
+			{
+				Terms = new Term[] { Term.Zero };
+				return;
+			}
+
+			Terms = CloneHelper<Term>.CloneCollection(newTerms).ToArray();
 			OrderMonomials();
 		}
 
@@ -71,14 +78,18 @@ namespace PolynomialLibrary
 
 		private void OrderMonomials()
 		{
-			var orderedTerms = Terms.OrderBy(t => t.Degree); // First by degree
-			orderedTerms = orderedTerms.ThenByDescending(t => t.VariableCount()); // Then by variable count
-			orderedTerms = orderedTerms.ThenBy(t => t.CoEfficient); // Then by coefficient value
-			orderedTerms = orderedTerms.
-				ThenByDescending(t =>
-					new string(t.Variables.OrderBy(v => v.Symbol).Select(v => v.Symbol).ToArray())
-				); // Lastly, lexicographic order of variables. Descending order because zero degree terms (smaller stuff) goes first.
-			Terms = orderedTerms.ToArray();
+			if (Terms.Length > 1)
+			{
+				var orderedTerms = Terms.OrderBy(t => t.Degree); // First by degree
+				orderedTerms = orderedTerms.ThenByDescending(t => t.VariableCount()); // Then by variable count
+				orderedTerms = orderedTerms.ThenBy(t => t.CoEfficient); // Then by coefficient value
+				orderedTerms = orderedTerms.
+					ThenByDescending(t =>
+						new string(t.Variables.OrderBy(v => v.Symbol).Select(v => v.Symbol).ToArray())
+					); // Lastly, lexicographic order of variables. Descending order because zero degree terms (smaller stuff) goes first.
+
+				Terms = orderedTerms.ToArray();
+			}
 		}
 
 		internal bool HasVariables()
@@ -156,40 +167,51 @@ namespace PolynomialLibrary
 
 		public static MultivariatePolynomial GCD(MultivariatePolynomial left, MultivariatePolynomial right)
 		{
-			MultivariatePolynomial minuend = left.Clone();
-			MultivariatePolynomial subtrahend = right.Clone();
-			MultivariatePolynomial difference;
-			BigInteger minuendMaxCoefficient = 0;
-			BigInteger subtrahendMaxCoefficient = 0;
-			BigInteger differenceMaxCoefficient = 0;
+			MultivariatePolynomial dividend = left.Clone();
+			MultivariatePolynomial divisor = right.Clone();
+			MultivariatePolynomial quotient;
+			MultivariatePolynomial remainder;
+			BigInteger dividendLeadingCoefficient = 0;
+			BigInteger divisorLeadingCoefficient = 0;
+
+			bool swap = false;
 
 			do
 			{
-				minuendMaxCoefficient = minuend.MaxCoefficient();
-				subtrahendMaxCoefficient = subtrahend.MaxCoefficient();
-				difference = MultivariatePolynomial.Subtract(minuend, subtrahend).Clone();
-				differenceMaxCoefficient = difference.MaxCoefficient();
+				swap = false;
 
-				if (minuendMaxCoefficient > subtrahendMaxCoefficient && subtrahendMaxCoefficient > differenceMaxCoefficient)
+				dividendLeadingCoefficient = dividend.Terms.Last().CoEfficient;
+				divisorLeadingCoefficient = divisor.Terms.Last().CoEfficient;
+
+				if (dividend.Degree < divisor.Degree)
 				{
-					minuend = subtrahend.Clone();
-					subtrahend = difference.Clone();
+					swap = true;
 				}
-				else if (differenceMaxCoefficient > subtrahendMaxCoefficient)
+				else if (dividend.Degree == divisor.Degree && dividendLeadingCoefficient < divisorLeadingCoefficient)
 				{
-					//minuend = subtrahend.Clone();
-					subtrahend = difference.Clone();
+					swap = true;
 				}
+
+				if (swap)
+				{
+					MultivariatePolynomial temp = dividend.Clone();
+					dividend = divisor;
+					divisor = temp.Clone();
+				}
+
+				quotient = MultivariatePolynomial.Divide(dividend, divisor);
+				dividend = quotient.Clone();
+
 			}
-			while (minuendMaxCoefficient > 0 && subtrahendMaxCoefficient > 0 && minuend.HasVariables() && subtrahend.HasVariables());
+			while (BigInteger.Abs(dividendLeadingCoefficient) > 0 && BigInteger.Abs(divisorLeadingCoefficient) > 0 && dividend.HasVariables() && divisor.HasVariables());
 
-			if (minuend.HasVariables())
+			if (dividend.HasVariables())
 			{
-				return subtrahend.Clone();
+				return divisor.Clone();
 			}
 			else
 			{
-				return minuend.Clone();
+				return dividend.Clone();
 			}
 		}
 

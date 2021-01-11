@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Numerics;
+using System.Globalization;
 using System.Collections.Generic;
 
 namespace PolynomialLibrary
@@ -12,10 +13,23 @@ namespace PolynomialLibrary
 
 		private BigInteger? IndeterminateValue { get; set; }
 
+		private UnicodeCategory[] AllowedSymbolCategories = new UnicodeCategory[]
+		{
+			UnicodeCategory.LowercaseLetter,
+			UnicodeCategory.UppercaseLetter,
+			UnicodeCategory.ModifierLetter,
+			UnicodeCategory.MathSymbol
+		};
+
 		#region Constructor & Parse
 
 		public Indeterminate(char symbol, int exponent)
 		{
+			var symbolCategory = CharUnicodeInfo.GetUnicodeCategory(symbol);
+			if (!AllowedSymbolCategories.Contains(symbolCategory))
+			{
+				throw new ArgumentException($"Parameter {nameof(symbol)} must be a letter character.");
+			}
 			Symbol = symbol;
 			Exponent = exponent;
 			IndeterminateValue = null;

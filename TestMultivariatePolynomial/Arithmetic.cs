@@ -120,11 +120,29 @@ namespace TestMultivariatePolynomial
 		}
 
 		[TestMethod]
-		public void TestMultiply()
+		public void TestMultiply1()
 		{
 			string lhs = "6*X + 1";
 			string rhs = "6*Y + 1";
 			string expected = "36*X*Y + 6*X + 6*Y + 1";
+
+			MultivariatePolynomial polylhs = MultivariatePolynomial.Parse(lhs);
+			MultivariatePolynomial polyrhs = MultivariatePolynomial.Parse(rhs);
+
+			MultivariatePolynomial polyProdcut = MultivariatePolynomial.Multiply(polylhs, polyrhs);
+
+			string actual = polyProdcut.ToString();
+
+			TestContext.WriteLine($"Product: \"{actual}\".");
+			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Multiply({lhs}, {rhs});");
+		}
+
+		[TestMethod]
+		public void TestMultiplySameSymbols()
+		{
+			string lhs = "6*X + 1";
+			string rhs = "6*X - 1";
+			string expected = "36*X^2 - 1";
 
 			MultivariatePolynomial polylhs = MultivariatePolynomial.Parse(lhs);
 			MultivariatePolynomial polyrhs = MultivariatePolynomial.Parse(rhs);
