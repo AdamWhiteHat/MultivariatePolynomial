@@ -241,11 +241,11 @@ namespace TestMultivariatePolynomial
 		[TestMethod]
 		public void TestGCD()
 		{
-			throw new NotImplementedException();
+			//throw new NotImplementedException();
 
-			string polyString1 = "11*X + 4";   //"X^4 + 8*X^3 + 21*X^2 + 22*X + 8";
-			string polyString2 = "7*X + 2";    //"X^3 + 6*X^2 + 11*X + 6";
-			string expected = "6";             //"X^2 + 3*X + 2";
+			string polyString1 = "X^4 + 8*X^3 + 21*X^2 + 22*X + 8";     //"X^4 + 8*X^3 + 21*X^2 + 22*X + 8";
+			string polyString2 = "X^3 + 6*X^2 + 11*X + 6";              //"X^3 + 6*X^2 + 11*X + 6";
+			string expected = "X^2 + 3*X + 2";                          //"X^2 + 3*X + 2";
 
 			MultivariatePolynomial poly1 = MultivariatePolynomial.Parse(polyString1);
 			MultivariatePolynomial poly2 = MultivariatePolynomial.Parse(polyString2);

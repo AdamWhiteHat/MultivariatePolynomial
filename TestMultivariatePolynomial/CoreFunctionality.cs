@@ -30,6 +30,23 @@ namespace TestMultivariatePolynomial
 		}
 
 		[TestMethod]
+		public void TestParseNegativeLeadingCoefficient()
+		{
+			string polynomialExpected = "-8*X^2 - X + 8";
+			string leadingTermExpected = "-8*X^2";
+			string secondTermExpected = "-X";
+
+			MultivariatePolynomial testPolynomial = MultivariatePolynomial.Parse(polynomialExpected);
+			string polynomialActual = testPolynomial.ToString();
+			string leadingTermActual = testPolynomial.Terms[2].ToString();
+			string secondTermActual = testPolynomial.Terms[1].ToString();
+
+			Assert.AreEqual(polynomialExpected, polynomialActual, $"Expected: \"{polynomialExpected}\"; Actual: \"{polynomialActual}\"");
+			Assert.AreEqual(leadingTermExpected, leadingTermActual, $"Expected: \"{leadingTermExpected}\"; Actual: \"{leadingTermActual}\"");
+			Assert.AreEqual(secondTermExpected, secondTermActual, $"Expected: \"{secondTermExpected}\"; Actual: \"{secondTermActual}\"");
+		}
+
+		[TestMethod]
 		public void TestInstantiateZeroCoefficient()
 		{
 			Indeterminate indt = new Indeterminate('X', 2);

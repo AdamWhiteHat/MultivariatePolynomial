@@ -182,7 +182,8 @@ namespace PolynomialLibrary
 				}
 				index++;
 			}
-			return new Term(newCoefficient, newVariables.ToArray());
+			Term result = new Term(newCoefficient, newVariables.ToArray());
+			return result;
 		}
 
 		#endregion
@@ -252,14 +253,14 @@ namespace PolynomialLibrary
 			string coefficientString = string.Empty;
 			string variableString = string.Empty;
 			string multiplyString = string.Empty;
-					
+
 			if (Variables.Any())
 			{
 				variableString = string.Join("*", Variables.Select(v => v.ToString()));
 			}
 			else if (BigInteger.Abs(CoEfficient) == 1)
 			{
-				coefficientString = BigInteger.Abs(CoEfficient).ToString();
+				coefficientString = CoEfficient.ToString();
 			}
 
 			if (BigInteger.Abs(CoEfficient) != 1)
@@ -268,7 +269,11 @@ namespace PolynomialLibrary
 				{
 					multiplyString = "*";
 				}
-				coefficientString = BigInteger.Abs(CoEfficient).ToString();
+				coefficientString = CoEfficient.ToString();
+			}
+			else if (Variables.Any() && CoEfficient.Sign == -1)
+			{
+				coefficientString = "-";
 			}
 
 			return $"{coefficientString}{multiplyString}{variableString}";

@@ -323,12 +323,12 @@ namespace PolynomialLibrary
 					foreach (Term matchTerm in matches)
 					{
 						leftTermsList.Remove(matchTerm);
-						Term result = Term.Divide(matchTerm, rightTerm);
-						if (result != Term.Empty)
+						Term quotient = Term.Divide(matchTerm, rightTerm);
+						if (quotient != Term.Empty)
 						{
-							if (!newTermsList.Any(lt => lt.Equals(result)))
+							if (!newTermsList.Any(lt => lt.Equals(quotient)))
 							{
-								newTermsList.Add(result);
+								newTermsList.Add(quotient);
 							}
 						}
 					}
@@ -338,7 +338,8 @@ namespace PolynomialLibrary
 					///newTermsList.Add(rightTerm);
 				}
 			}
-			return new MultivariatePolynomial(newTermsList.ToArray());
+			MultivariatePolynomial result = new MultivariatePolynomial(newTermsList.ToArray());
+			return result;
 		}
 
 		#endregion
@@ -399,31 +400,8 @@ namespace PolynomialLibrary
 			string termString = string.Empty;
 			string result = string.Empty;
 
-			foreach (Term term in Terms.Reverse())
-			{
-				signString = string.Empty;
-				termString = string.Empty;
-
-				if (isFirstPass)
-				{
-					isFirstPass = false;
-				}
-				else
-				{
-					if (term.CoEfficient.Sign == -1)
-					{
-						signString = $" - ";
-					}
-					else if (term.CoEfficient.Sign == 1)
-					{
-						signString = $" + ";
-					}
-				}
-
-				termString = term.ToString();
-
-				result += $"{signString}{termString}";
-			}
+			result = string.Join(" + ", Terms.Reverse().Select(trm => trm.ToString()));
+			result = result.Replace(" + -", " - ");
 
 			return result;
 		}
