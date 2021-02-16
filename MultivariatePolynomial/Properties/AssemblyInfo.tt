@@ -29,5 +29,13 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("1.0.2021.46")]
-[assembly: AssemblyFileVersion("1.0.2021.46")]
+<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ output extension=".cs" #>
+[assembly: AssemblyVersion("<#= this.MajorVersion #>.<#= this.MinorVersion #>.<#= this.RevisionYear #>.<#= this.RevisionDay #>")]
+[assembly: AssemblyFileVersion("<#= this.MajorVersion #>.<#= this.MinorVersion #>.<#= this.RevisionYear #>.<#= this.RevisionDay #>")]
+<#+
+       int MajorVersion = 1;
+       int MinorVersion = 0;
+       int RevisionYear = DateTime.Now.ToLocalTime().Year;
+       int RevisionDay = DateTime.Now.ToLocalTime().DayOfYear;
+#>

@@ -161,6 +161,48 @@ namespace PolynomialLibrary
 			return result;
 		}
 
+		/// <summary>
+		/// Like the Evaluate method, except it replaces indeterminates with Polynomials instead of integers,
+		/// and returns the resulting (usually large) Polynomial
+		/// </summary>
+		public MultivariatePolynomial FunctionalComposition(List<Tuple<char, MultivariatePolynomial>> indeterminateValues)
+		{
+			List<Term> terms = this.Terms.ToList();
+			List<MultivariatePolynomial> composedTerms = new List<MultivariatePolynomial>();
+
+			foreach (Term trm in terms)
+			{
+				MultivariatePolynomial constant = MultivariatePolynomial.Parse(trm.CoEfficient.ToString());
+				List<MultivariatePolynomial> toCompose = new List<MultivariatePolynomial>();
+				toCompose.Add(constant.Clone());
+				foreach (Indeterminate variable in trm.Variables)
+				{
+					int exp = variable.Exponent;
+					MultivariatePolynomial valueOfIndeterminate = indeterminateValues.Where(tup => tup.Item1 == variable.Symbol).Select(tup => tup.Item2).FirstOrDefault();
+					if (valueOfIndeterminate == null)
+					{
+						MultivariatePolynomial thisVariableAsPoly = new MultivariatePolynomial(new Term[] { new Term(BigInteger.One, new Indeterminate[] { variable }) });
+						toCompose.Add(thisVariableAsPoly);
+					}
+					else if (exp == 0) { continue; }
+					else if (exp == 1)
+					{
+						toCompose.Add(valueOfIndeterminate);
+					}
+					else
+					{
+						MultivariatePolynomial toMultiply = MultivariatePolynomial.Pow(valueOfIndeterminate, exp);
+						toCompose.Add(toMultiply);
+					}
+				}
+				MultivariatePolynomial composed = MultivariatePolynomial.Product(toCompose);
+				composedTerms.Add(composed);
+			}
+
+			MultivariatePolynomial result = MultivariatePolynomial.Sum(composedTerms);
+			return result;
+		}
+
 		#endregion
 
 		#region Arithmetic
@@ -215,6 +257,40 @@ namespace PolynomialLibrary
 			}
 		}
 
+		public static MultivariatePolynomial Sum(IEnumerable<MultivariatePolynomial> polys)
+		{
+			MultivariatePolynomial result = null;
+			foreach (MultivariatePolynomial p in polys)
+			{
+				if (result == null)
+				{
+					result = p.Clone();
+				}
+				else
+				{
+					result = MultivariatePolynomial.Add(result, p);
+				}
+			}
+			return result;
+		}
+
+		public static MultivariatePolynomial Product(IEnumerable<MultivariatePolynomial> polys)
+		{
+			MultivariatePolynomial result = null;
+			foreach (MultivariatePolynomial p in polys)
+			{
+				if (result == null)
+				{
+					result = p.Clone();
+				}
+				else
+				{
+					result = MultivariatePolynomial.Multiply(result, p);
+				}
+			}
+			return result;
+		}
+
 		public static MultivariatePolynomial Add(MultivariatePolynomial left, MultivariatePolynomial right)
 		{
 			return OneToOneArithmetic(left, right, Term.Add);
@@ -248,7 +324,14 @@ namespace PolynomialLibrary
 				}
 				else
 				{
-					leftTermsList.Add(Term.Negate(rightTerm));
+					if (operation == Term.Subtract)
+					{
+						leftTermsList.Add(Term.Negate(rightTerm));
+					}
+					else
+					{
+						leftTermsList.Add(rightTerm);
+					}
 				}
 			}
 			return new MultivariatePolynomial(leftTermsList.ToArray());
