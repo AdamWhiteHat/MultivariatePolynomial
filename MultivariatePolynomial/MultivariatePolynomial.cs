@@ -161,6 +161,31 @@ namespace PolynomialLibrary
 			return result;
 		}
 
+		public Complex Evaluate(List<Tuple<char, Complex>> indeterminateValues)
+		{
+			Complex result = 0;
+			foreach (Term term in Terms)
+			{
+				Complex termValue = new Complex((double)term.CoEfficient.Clone(), 0);
+
+				if (term.Variables.Any())
+				{
+					var variableValues =
+						term.Variables
+						.Select(indetrmnt =>
+							indeterminateValues.Where(tup => tup.Item1 == indetrmnt.Symbol)
+											  .Select(tup => Complex.Pow(tup.Item2, (double)indetrmnt.Exponent))
+											  .Single()
+						);
+
+					termValue *= variableValues.Aggregate((l, r) => l * r);
+				}
+
+				result += termValue;
+			}
+			return result;
+		}
+
 		/// <summary>
 		/// Like the Evaluate method, except it replaces indeterminates with Polynomials instead of integers,
 		/// and returns the resulting (usually large) Polynomial

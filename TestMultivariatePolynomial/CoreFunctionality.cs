@@ -16,7 +16,7 @@ namespace TestMultivariatePolynomial
 		[TestMethod]
 		public void TestParse001()
 		{
-			string toTest = "X*Y*Z^2 + Y*Z - X*Z - 268179*Z";
+			string toTest = "X*Y*Z^2 + X*Y + X*Z + Y*Z - 1";
 
 			MultivariatePolynomial testPolynomial = MultivariatePolynomial.Parse(toTest);
 
@@ -152,11 +152,11 @@ namespace TestMultivariatePolynomial
 				"X - 1",
 				"2*X^4 + 13*X^3 + 29*X^2 + 29*X + 13",
 				"w^2*x*y + w*x + w*y + 1",
-				"144*x*y + 12*x + 12*y + 1",
-				"144*x*y + 12*y - 12*x - 1",
-				"144*x*y - 12*x - 12*y - 1",
-				"144*x*y - 12*x - 12*y",
-				"144*x",
+				"x*y + x + y + 1",
+				"7*x*y + 14*y - 3*x - 1",
+				"4*x*y - 2*y - 3*x - 1",
+				"4*x*y - 11*y - 12*x",
+				"12*x",
 				"x",
 				"1",
 				"0"
@@ -181,9 +181,9 @@ namespace TestMultivariatePolynomial
 		[TestMethod]
 		public void TestEvaluate_BigInteger()
 		{
-			BigInteger expected = BigInteger.Parse("104053773133");
+			string expected = "8551120982818029391";
 
-			string polyString = "36*x*y - 6*x - 6*y + 1";
+			string polyString = "2*x^4 + 13*y^3 + 29*x^2 + 29*y + 13";
 			MultivariatePolynomial poly = MultivariatePolynomial.Parse(polyString);
 			List<Tuple<char, BigInteger>> indeterminants = new List<Tuple<char, BigInteger>>()
 			{
@@ -191,7 +191,8 @@ namespace TestMultivariatePolynomial
 				new Tuple<char, BigInteger>('y', 63570),
 			};
 
-			BigInteger actual = poly.Evaluate(indeterminants);
+			BigInteger result = poly.Evaluate(indeterminants);
+			string actual = result.ToString();
 
 			TestContext.WriteLine($"Result: \"{actual}\".");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Evaluate({polyString}) where {string.Join(" and ", indeterminants.Select(tup => $"{tup.Item1} = {tup.Item2}"))}");
@@ -200,20 +201,41 @@ namespace TestMultivariatePolynomial
 		[TestMethod]
 		public void TestEvaluate_Double()
 		{
-			double expected = 104053773133;
+			string expected = "15565";
 
-			string polyString = "36*x*y - 6*x - 6*y + 1";
+			string polyString = "10000*x^4 + 125*y^3 + 500*x^2 + 75*y + 13";
 			MultivariatePolynomial poly = MultivariatePolynomial.Parse(polyString);
 			List<Tuple<char, double>> indeterminants = new List<Tuple<char, double>>()
 			{
-				new Tuple<char, double>('x', 45468),
-				new Tuple<char, double>('y', 63570),
+				new Tuple<char, double>('x', 1.1d),
+				new Tuple<char, double>('y', 1.2d),
 			};
 
-			double actual = poly.Evaluate(indeterminants);
+			double result = poly.Evaluate(indeterminants);
+			string actual = result.ToString();
 
 			TestContext.WriteLine($"Result: \"{actual}\".");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Evaluate({polyString}) where {string.Join(" and ", indeterminants.Select(tup => $"{tup.Item1} = {tup.Item2}"))}");
+		}
+
+		[TestMethod]
+		public void TestEvaluate_Complex()
+		{
+			string expected = "(0, 0)";
+
+			string polyString = "x^2 + 1";
+			MultivariatePolynomial poly = MultivariatePolynomial.Parse(polyString);
+			List<Tuple<char, Complex>> indeterminants = new List<Tuple<char, Complex>>()
+			{
+				new Tuple<char, Complex>('x', Complex.ImaginaryOne)
+			};
+
+			Complex evaluated = poly.Evaluate(indeterminants);
+			Complex result = new Complex(Math.Round(evaluated.Real, 1), Math.Round(evaluated.Imaginary, 1));
+			string actual = result.ToString();
+
+			TestContext.WriteLine($"Result: \"{actual}\".");
+			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Evaluate({polyString}) where x = sqrt(-1)");
 		}
 
 		[TestMethod]
