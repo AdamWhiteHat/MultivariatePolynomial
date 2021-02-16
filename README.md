@@ -19,5 +19,5 @@ An example of a multivariate polynomial would be:
    * Functional composition
    * Polynomial evaluation by assigning values to the indeterminates
    * Numeric values are of type BigInteger, so it support polynomials that evaluate to arbitrarily large numbers
-   * While all coefficents must be integers, it does support evaluating the polynomial with real and complex indeterminates, returning a real or complex result
+   * While all coefficients must be integers, it does support evaluating the polynomial with real and complex indeterminates, returning a real or complex result
 
