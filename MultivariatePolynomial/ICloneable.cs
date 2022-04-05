@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 
-namespace PolynomialLibrary
+namespace ExtendedArithmetic
 {
 	public interface ICloneable<T>
 	{

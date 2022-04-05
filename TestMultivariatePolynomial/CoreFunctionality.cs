@@ -3,7 +3,7 @@ using System.Linq;
 using System.Numerics;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PolynomialLibrary;
+using ExtendedArithmetic;
 
 namespace TestMultivariatePolynomial
 {

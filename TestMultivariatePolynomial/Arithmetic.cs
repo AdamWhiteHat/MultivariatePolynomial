@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PolynomialLibrary;
+using ExtendedArithmetic;
 
 namespace TestMultivariatePolynomial
 {

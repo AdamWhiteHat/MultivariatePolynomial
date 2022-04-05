@@ -4,7 +4,7 @@ using System.Numerics;
 using System.Globalization;
 using System.Collections.Generic;
 
-namespace PolynomialLibrary
+namespace ExtendedArithmetic
 {
 	public class Indeterminate : ICloneable<Indeterminate>, IEquatable<Indeterminate>, IEqualityComparer<Indeterminate>
 	{
