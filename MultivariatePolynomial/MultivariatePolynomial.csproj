@@ -16,6 +16,7 @@
 		<Copyright>Made by Adam White</Copyright>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageTags>A symbolic, multivariate integer polynomial-arithmetic polynomial symbolic arithmetic arbitrary-precision numerics numbers biginteger legendre-symbol tonelli-shanks gcd modulus square-root csharp</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageProjectUrl>https://www.nuget.org/packages/ExtendedArithmetic.MultivariatePolynomial/</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/AdamWhiteHat/MultivariatePolynomial</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -23,6 +24,11 @@
 		<Version>$([System.DateTime]::Now.ToString("yyyy."$([System.DateTime]::Now.DayOfYear)".HHmm"))</Version>
 		<AssemblyVersion>$([System.DateTime]::Now.ToString("yyyy."$([System.DateTime]::Now.DayOfYear)".HHmm"))</AssemblyVersion>
 		<FileVersion>$([System.DateTime]::Now.ToString("yyyy."$([System.DateTime]::Now.DayOfYear)".HHmm"))</FileVersion>
+		<NeutralLanguage>en</NeutralLanguage>
 	</PropertyGroup>
 
+	<ItemGroup>
+	    <None Include="..\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+	
 </Project>
