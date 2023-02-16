@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Numerics;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ExtendedArithmetic
 {
@@ -54,10 +55,73 @@ namespace ExtendedArithmetic
 
 		internal static bool ShareCommonFactor(Term left, Term right)
 		{
-			if (left == null || right == null) { throw new ArgumentNullException(); }
-			if (!left.Variables.Any(lv => right.Variables.Any(rv => rv.Equals(lv)))) { return false; }
-			if (right.CoEfficient != 1 && (left.CoEfficient % right.CoEfficient != 0)) { return false; }
+			if (left == null || right == null)
+			{
+				throw new ArgumentNullException();
+			}
+			if (!left.Variables.Any(lv => right.Variables.Any(rv => rv.Equals(lv))))
+			{
+				return false;
+			}
+			if (right.CoEfficient == 0 || left.CoEfficient == 0)
+			{
+				return false;
+			}
+
+			if (right.CoEfficient == left.CoEfficient)
+			{
+				return true;
+			}
+
+			// 1 is a factor of every number.
+			// Note that we have already determined it shares at least one variable by this point.
+			if (right.CoEfficient == 1)
+			{
+				return true;
+			}
+
+			if (BigInteger.GreatestCommonDivisor(left.CoEfficient, right.CoEfficient) <= 1)
+			{
+				return false;
+			}
+
 			return true;
+		}
+
+		internal static Tuple<BigInteger, char[]> GetCommonDivisors(params Term[] terms)
+		{
+			if (terms.Any(t => t == null)) { throw new ArgumentNullException(); }
+
+			BigInteger commonDivisors = terms.Select(trm => trm.CoEfficient).Aggregate(BigInteger.GreatestCommonDivisor);
+
+			char[] commonVariables = terms.Select(trm => trm.Variables.SelectMany(indt => Enumerable.Repeat(indt.Symbol, indt.Exponent)).OrderBy(c => c).ToList())
+				.Aggregate(Match<char>).ToArray();
+
+			return new Tuple<BigInteger, char[]>(commonDivisors, commonVariables);
+		}
+
+		internal static List<T> Match<T>(List<T> first, List<T> second)
+		{
+			List<T> smaller = first;
+			List<T> larger = second;
+			if (second.Count < first.Count)
+			{
+				smaller = second;
+				larger = first;
+			}
+
+			List<T> results = new List<T>();
+			foreach (T item in smaller)
+			{
+				T match = larger.FirstOrDefault(i => i.Equals(item));
+				if (match != null)
+				{
+					larger.Remove(match);
+					results.Add(match);
+				}
+			}
+
+			return results;
 		}
 
 		internal static bool AreIdentical(Term left, Term right)
@@ -258,20 +322,23 @@ namespace ExtendedArithmetic
 			{
 				variableString = string.Join("*", Variables.Select(v => v.ToString()));
 			}
-			else if (BigInteger.Abs(CoEfficient) == 1)
+
+			bool variableStringEmpty = string.IsNullOrWhiteSpace(variableString);
+
+			if (variableStringEmpty && BigInteger.Abs(CoEfficient) == 1)
 			{
 				coefficientString = CoEfficient.ToString();
 			}
 
 			if (BigInteger.Abs(CoEfficient) != 1)
 			{
-				if (Variables.Any())
+				if (!variableStringEmpty)
 				{
 					multiplyString = "*";
 				}
 				coefficientString = CoEfficient.ToString();
 			}
-			else if (Variables.Any() && CoEfficient.Sign == -1)
+			else if (!variableStringEmpty && CoEfficient.Sign == -1)
 			{
 				coefficientString = "-";
 			}

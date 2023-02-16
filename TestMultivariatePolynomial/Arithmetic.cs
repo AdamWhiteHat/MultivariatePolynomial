@@ -214,10 +214,10 @@ namespace TestMultivariatePolynomial
 		[TestMethod]
 		public void TestDivide2()
 		{
-			string dividend = "2*X*Y^2 + 3*X*Y + 4*Y^2 + 6*Y";
+			string dividend = "2*X*Y^2 + 3*X*Y + 4*Y^2 + 6*Y + 2*X + 4";
 			string divisor = "X + 2";
 
-			string expected = "2*Y^2 + 3*Y";
+			string expected = "2*Y^2 + 3*Y + 2";
 
 			MultivariatePolynomial polyDivedend = MultivariatePolynomial.Parse(dividend);
 			MultivariatePolynomial polyDivisor = MultivariatePolynomial.Parse(divisor);
@@ -227,6 +227,87 @@ namespace TestMultivariatePolynomial
 
 			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Divide({dividend}, {divisor});");
+		}
+
+
+		[TestMethod]
+		public void TestDivide3()
+		{
+			string dividend = "X^4 + 8*X^3 + 21*X^2 + 22*X + 8";
+			string divisor = "X + 1";
+
+			string expected = "X^3 + 7*X^2 + 14*X + 8"; // (X+1)*(X+2)*(X+4)
+
+			MultivariatePolynomial polyDivedend = MultivariatePolynomial.Parse(dividend);
+			MultivariatePolynomial polyDivisor = MultivariatePolynomial.Parse(divisor);
+
+			MultivariatePolynomial quotient = MultivariatePolynomial.Divide(polyDivedend, polyDivisor);
+			string actual = quotient.ToString();
+
+			TestContext.WriteLine($"Expected #1: \"{expected}\"; Actual: \"{actual}\"");
+			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Divide({dividend}, {divisor});");
+		}
+
+		[TestMethod]
+		public void TestDivide4()
+		{
+			string dividend = "X^4 + 8*X^3 + 21*X^2 + 22*X + 8";
+			string divisor = "X + 2";
+
+			string expected = "X^3 + 6*X^2 + 9*X + 4";
+
+			MultivariatePolynomial polyDivedend = MultivariatePolynomial.Parse(dividend);
+			MultivariatePolynomial polyDivisor = MultivariatePolynomial.Parse(divisor);
+
+			MultivariatePolynomial quotient = MultivariatePolynomial.Divide(polyDivedend, polyDivisor);
+			string actual = quotient.ToString();
+
+			TestContext.WriteLine($"Expected #2: \"{expected}\"; Actual: \"{actual}\"");
+			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Divide({dividend}, {divisor});");
+		}
+
+
+
+		[TestMethod]
+		public void TestDivide_UserSubmittedIssueNo1()
+		{
+			string expected1 = "1";
+			string expected2 = "a";
+			string expected3 = "2";
+
+			Indeterminate[] ind1 = new Indeterminate[] { new Indeterminate('a', 1) };
+			Indeterminate[] ind2 = new Indeterminate[0];
+
+			Term[] terms = new Term[] { new Term(2, ind1) };
+			MultivariatePolynomial pol1 = new MultivariatePolynomial(terms); // MultivariatePolynomial.Parse("2*a"); // new MultivariatePolynomial(terms);
+
+			Term[] terms2 = new Term[] { new Term(2, ind2) };
+			MultivariatePolynomial pol2 = new MultivariatePolynomial(terms2); // MultivariatePolynomial.Parse("2"); // 
+
+			Term[] terms3 = new Term[] { new Term(1, ind1) };
+			MultivariatePolynomial pol3 = new MultivariatePolynomial(terms3); // MultivariatePolynomial.Parse("a");  // 
+
+			TestContext.WriteLine($"pol1 = {pol1}");
+			TestContext.WriteLine($"pol2 = {pol2}");
+			TestContext.WriteLine($"pol3 = {pol3}");
+			TestContext.WriteLine("");
+
+			MultivariatePolynomial quotient1 = MultivariatePolynomial.Divide(pol1, pol1);
+			MultivariatePolynomial quotient2 = MultivariatePolynomial.Divide(pol1, pol2);
+			MultivariatePolynomial quotient3 = MultivariatePolynomial.Divide(pol1, pol3);
+
+			TestContext.WriteLine($"pol1/pol1 = {quotient1}");
+			TestContext.WriteLine($"pol1/pol2 = {quotient2}");
+			TestContext.WriteLine($"pol1/pol3 = {quotient3}");
+			TestContext.WriteLine("");
+
+			string actual1 = quotient1.ToString();
+			string actual2 = quotient2.ToString();
+			string actual3 = quotient3.ToString();
+
+			Assert.AreEqual(expected1, actual1);
+			Assert.AreEqual(expected2, actual2);
+			Assert.AreEqual(expected3, actual3);
 		}
 
 		[TestMethod]
@@ -277,7 +358,7 @@ namespace TestMultivariatePolynomial
 		}
 
 		[TestMethod]
-		public void TestGCD()
+		public void TestGCD1()
 		{
 			//throw new NotImplementedException();
 
@@ -294,6 +375,65 @@ namespace TestMultivariatePolynomial
 			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GCD({polyString1}, {polyString2});");
 		}
+
+		//[TestMethod]
+		public void TestGCD2()
+		{
+			//throw new NotImplementedException();
+
+			string polyString1 = "3*X*Y + 3*X + 2*Y + 2";
+			string polyString2 = "4*X*Y + 4*X + 3*Y + 3";
+			string expected = "Y + 1";
+
+			MultivariatePolynomial poly1 = MultivariatePolynomial.Parse(polyString1);
+			MultivariatePolynomial poly2 = MultivariatePolynomial.Parse(polyString2);
+			MultivariatePolynomial gcd = MultivariatePolynomial.GCD(poly1, poly2);
+
+			string actual = gcd.ToString();
+
+			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GCD({polyString1}, {polyString2});");
+		}
+
+		[TestMethod]
+		public void TestGCD3()
+		{
+			//throw new NotImplementedException();
+
+			string polyString1 = "6*X^2 + 3*X*Y + 2*X + Y";
+			string polyString2 = "10*Z^2*X + 5*Z^2*Y + 2*Z*X + Z*Y - 2*X - Y";
+			string expected = "2*X + Y";
+
+			MultivariatePolynomial poly1 = MultivariatePolynomial.Parse(polyString1);
+			MultivariatePolynomial poly2 = MultivariatePolynomial.Parse(polyString2);
+			MultivariatePolynomial gcd = MultivariatePolynomial.GCD(poly1, poly2);
+
+			string actual = gcd.ToString();
+
+			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GCD({polyString1}, {polyString2});");
+		}
+
+		[TestMethod]
+		public void TestGCD4()
+		{
+			//throw new NotImplementedException();
+
+			string polyString1 = "3*X^2*Y - Y";
+			string polyString2 = "2*Y^3 + 3*Y*Z";
+			string expected = "Y";
+
+			MultivariatePolynomial poly1 = MultivariatePolynomial.Parse(polyString1);
+			MultivariatePolynomial poly2 = MultivariatePolynomial.Parse(polyString2);
+			MultivariatePolynomial gcd = MultivariatePolynomial.GCD(poly1, poly2);
+
+			string actual = gcd.ToString();
+
+			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GCD({polyString1}, {polyString2});");
+		}
+
+
 
 		[TestMethod]
 		public void TestFunctionalComposition001()

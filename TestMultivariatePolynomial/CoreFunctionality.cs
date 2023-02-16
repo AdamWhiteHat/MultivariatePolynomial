@@ -94,8 +94,13 @@ namespace TestMultivariatePolynomial
 
 			MultivariatePolynomial testPolynomial = MultivariatePolynomial.Parse(polynomialExpected);
 			string polynomialActual = testPolynomial.ToString();
-			string leadingTermActual = testPolynomial.Terms[2].ToString();
+			string leadingTermActual = testPolynomial.Terms[0].ToString();
 			string secondTermActual = testPolynomial.Terms[1].ToString();
+
+			TestContext.WriteLine(polynomialActual);
+			TestContext.WriteLine(leadingTermActual);
+			TestContext.WriteLine(secondTermActual);
+			TestContext.WriteLine(testPolynomial.Terms[2].ToString());
 
 			Assert.AreEqual(polynomialExpected, polynomialActual, $"Expected: \"{polynomialExpected}\"; Actual: \"{polynomialActual}\"");
 			Assert.AreEqual(leadingTermExpected, leadingTermActual, $"Expected: \"{leadingTermExpected}\"; Actual: \"{leadingTermActual}\"");
@@ -245,6 +250,14 @@ namespace TestMultivariatePolynomial
 			string expected = "4*X^5 + 6*X*Y^4 + 3*X^2*Y^3 + X^3*Y^2 + 3*Y^3 - 6*X^2*Y + 3*X*Y*Z - 5*X^2 + 24*X*Y - 4";
 
 			MultivariatePolynomial poly = MultivariatePolynomial.Parse(toParse);
+
+			string debug = string.Join(Environment.NewLine,
+				poly.Terms.Select(
+					   trm =>
+							$"Deg:{trm.Degree} Var.Cnt:{trm.VariableCount()} CoEff:{trm.CoEfficient} {string.Join("", trm.Variables.Select(ind => ind.Symbol).OrderBy(c => c).ToList())} => {trm.ToString()}"));
+			TestContext.WriteLine($"Term Info:");
+			TestContext.WriteLine(debug);
+
 			string actual = poly.ToString();
 
 			TestContext.WriteLine($"Result: \"{actual}\".");

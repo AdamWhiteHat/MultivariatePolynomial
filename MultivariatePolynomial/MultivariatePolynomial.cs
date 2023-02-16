@@ -2,6 +2,9 @@
 using System.Linq;
 using System.Numerics;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("TestMultivariatePolynomial")]
 
 namespace ExtendedArithmetic
 {
@@ -80,11 +83,11 @@ namespace ExtendedArithmetic
 		{
 			if (Terms.Length > 1)
 			{
-				var orderedTerms = Terms.OrderBy(t => t.Degree); // First by degree
-				orderedTerms = orderedTerms.ThenByDescending(t => t.VariableCount()); // Then by variable count
-				orderedTerms = orderedTerms.ThenBy(t => t.CoEfficient); // Then by coefficient value
+				var orderedTerms = Terms.OrderByDescending(t => t.Degree); // First by degree
+				orderedTerms = orderedTerms.ThenBy(t => t.VariableCount()); // Then by variable count
+				orderedTerms = orderedTerms.ThenByDescending(t => t.CoEfficient); // Then by coefficient value
 				orderedTerms = orderedTerms.
-					ThenByDescending(t =>
+					ThenBy(t =>
 						new string(t.Variables.OrderBy(v => v.Symbol).Select(v => v.Symbol).ToArray())
 					); // Lastly, lexicographic order of variables. Descending order because zero degree terms (smaller stuff) goes first.
 
@@ -234,52 +237,69 @@ namespace ExtendedArithmetic
 
 		public static MultivariatePolynomial GCD(MultivariatePolynomial left, MultivariatePolynomial right)
 		{
-			MultivariatePolynomial dividend = left.Clone();
-			MultivariatePolynomial divisor = right.Clone();
-			MultivariatePolynomial quotient;
-			MultivariatePolynomial remainder;
-			BigInteger dividendLeadingCoefficient = 0;
-			BigInteger divisorLeadingCoefficient = 0;
+			// TODO: This method needs to employ several strategies in order to perform GCD:
+			//
+			// IF
+			//		The polynomial only contains 1 indeterminant,
+			//		that is, if the polynomial is actually univariate
+			// THEN
+			//		Attempt to factor the polynomial into roots (X + 1)(X + 3)(X + 6)
+			//		by "factoring" (i.e. apply the Factor method of my univariate polynomial library ExtendedArithmetic.Polynomial)
+			//		Remove from the dividend matching roots in the divisor.
+			// ELSE
+			//		Groebner basis methods:
+			//		-Divisibility of monomials
+			//			Going monomial by monomial, attempt to apply Divisibility of monomials (terms):
+			//			For each pair of monomials in the Cartesian product of the divisor's terms and the dividend's terms:
+			//			One says that A divides B, or that N is a multiple of B, if m_i ≤ b_i for every i;
+			//			that is, if A is componentwise not greater than B.
+			//			In this case, the quotient B/A is defined as B/A = x_1^b_1 − a_1 ... x_n^b_n − a_n.
+			//			In other words, the exponent vector of B/A is the componentwise subtraction
+			//			of the exponent vectors of B and A.
+			//			
+			//			The greatest common divisor, gcd(A, B), of A and B
+			//			is the monomial x_1^min(a_1 , b_1) ... x_n^min(a_n, b_n)
+			//			whose exponent vector is the componentwise minimum of A and B.
+			//		-Lead-reduction
+			//		-S-Polynomial
+			//
+			// ELSE
+			//		Does it make sense to apply the Rational root theorem to integral polynomials?
+			//		Probably not.
+			//		GenericMultivariatePolynomial library which have real or rational coefficients
+			//		could would benefit from the Rational root theorem.
+			//
 
-			bool swap = false;
+			// For debugging purposes:
+			// var leftGCD = Term.GetCommonDivisors(left.Terms);
+			// var rightGCD = Term.GetCommonDivisors(right.Terms);
 
-			do
+			List<Term> newTermsList = new List<Term>();
+			List<Term> leftTermsList = CloneHelper<Term>.CloneCollection(left.Terms).ToList();
+
+			foreach (Term rightTerm in right.Terms)
 			{
-				swap = false;
-
-				dividendLeadingCoefficient = dividend.Terms.Last().CoEfficient;
-				divisorLeadingCoefficient = divisor.Terms.Last().CoEfficient;
-
-				if (dividend.Degree < divisor.Degree)
+				var commonDivisorsList = leftTermsList.Select(trm => Term.GetCommonDivisors(trm, rightTerm)).ToList();
+				var matches = leftTermsList.Where(leftTerm => Term.ShareCommonFactor(leftTerm, rightTerm)).ToList();
+				if (matches.Any())
 				{
-					swap = true;
+					foreach (Term matchTerm in matches)
+					{
+						leftTermsList.Remove(matchTerm);
+						Term quotient = Term.Divide(matchTerm, rightTerm);
+						if (quotient != Term.Empty)
+						{
+							//if (!newTermsList.Any(lt => lt.Equals(quotient)))
+							//{
+							newTermsList.Add(quotient);
+							//}
+						}
+					}
 				}
-				else if (dividend.Degree == divisor.Degree && dividendLeadingCoefficient < divisorLeadingCoefficient)
-				{
-					swap = true;
-				}
-
-				if (swap)
-				{
-					MultivariatePolynomial temp = dividend.Clone();
-					dividend = divisor;
-					divisor = temp.Clone();
-				}
-
-				quotient = MultivariatePolynomial.Divide(dividend, divisor);
-				dividend = quotient.Clone();
-
 			}
-			while (BigInteger.Abs(dividendLeadingCoefficient) > 0 && BigInteger.Abs(divisorLeadingCoefficient) > 0 && dividend.HasVariables() && divisor.HasVariables());
 
-			if (dividend.HasVariables())
-			{
-				return divisor.Clone();
-			}
-			else
-			{
-				return dividend.Clone();
-			}
+			MultivariatePolynomial result = new MultivariatePolynomial(newTermsList.ToArray());
+			return result;
 		}
 
 		public static MultivariatePolynomial Sum(IEnumerable<MultivariatePolynomial> polys)
@@ -420,34 +440,134 @@ namespace ExtendedArithmetic
 
 		public static MultivariatePolynomial Divide(MultivariatePolynomial left, MultivariatePolynomial right)
 		{
-			List<Term> newTermsList = new List<Term>();
-			List<Term> leftTermsList = CloneHelper<Term>.CloneCollection(left.Terms).ToList();
+			// Multivariate polynomial division is ill defined.
+			// 
+			// When going monomial-by-monomial (or term-by-term), dividing them by some common multiple,
+			// as part of the process of dividing a multivariate polynomial,
+			// the order in which you visit each term matters and the result you get can be different
+			// depending on what order you divide the terms in.
+			// 
+			// So for consistent, reliable results, you must impose a total, well-order ordering on the monomials.
+			// However, there is no obvious natural ordering to arbitrary monomials.
+			// To illustrate what I mean, let me give you an example:
+			// Which of the two following monomials has the greater value?
+			// 5*x^2*y^3
+			// or
+			// 5*y^2*x^3 ?
+			// 
+			// It is not so clear.
+			// 
+			// We must impose an ordering. Luckily, what ordering we choose is not as important as it is
+			// that the ordering is well-ordered, total and it is consistent and enforced.
+			//
+			// Because multivariate polynomial division is a whole different beast,
+			// this method handles two different cases:
+			// 1) Where both polynomials contain 1 or less variables and where both of those variables are the same (when applicable)
+			// 2) Where one or both polynomials are multivariate (i.e. All other cases)
+			//
+			//
 
-			foreach (Term rightTerm in right.Terms)
+			if (left == null) throw new ArgumentNullException(nameof(left));
+			if (right == null) throw new ArgumentNullException(nameof(right));
+
+			List<char> leftSymbols = left.Terms.SelectMany(t => t.Variables.Where(v => v.Exponent > 0).Select(v => v.Symbol)).Distinct().ToList();
+			List<char> rightSymbols = right.Terms.SelectMany(t => t.Variables.Where(v => v.Exponent > 0).Select(v => v.Symbol)).Distinct().ToList();
+			List<char> combinedSymbols = leftSymbols.Concat(rightSymbols).Distinct().ToList();
+
+			// If polynomial is actually univariate
+			if (combinedSymbols.Count <= 1)
 			{
-				var matches = leftTermsList.Where(leftTerm => Term.ShareCommonFactor(leftTerm, rightTerm)).ToList();
-				if (matches.Any())
+				if (right.Degree > left.Degree)
 				{
-					foreach (Term matchTerm in matches)
+					return left;
+				}
+
+				int rightDegree = right.Degree;
+				int quotientDegree = (left.Degree - rightDegree) + 1;
+
+				// Turn an array of Terms into an array of coefficients, including terms with coefficient of zero,
+				// such that index into the array encodes its degree/exponent
+				BigInteger[] rem = Enumerable.Repeat(BigInteger.Zero, left.Degree + 1).ToArray();
+				foreach (Term t in left.Terms)
+				{
+					rem[t.Degree] = t.CoEfficient;
+				}
+				// Turn an array of Terms into an array of coefficients
+				BigInteger[] rightCoeffs = Enumerable.Repeat(BigInteger.Zero, rightDegree + 1).ToArray();
+				foreach (Term t in right.Terms)
+				{
+					rightCoeffs[t.Degree] = t.CoEfficient;
+				}
+				// Array of coefficients to hold our result.
+				BigInteger[] quotient = Enumerable.Repeat(BigInteger.Zero, quotientDegree + 1).ToArray();
+
+				BigInteger leadingCoefficent = rightCoeffs[rightDegree];
+
+				// The leading coefficient is the only number we ever divide by
+				// (so if right is monic, polynomial division does not involve division at all!)
+				for (int i = quotientDegree - 1; i >= 0; i--)
+				{
+					quotient[i] = BigInteger.Divide(rem[rightDegree + i], leadingCoefficent);
+					rem[rightDegree + i] = new BigInteger(0);
+
+					for (int j = rightDegree + i - 1; j >= i; j--)
 					{
-						leftTermsList.Remove(matchTerm);
-						Term quotient = Term.Divide(matchTerm, rightTerm);
-						if (quotient != Term.Empty)
+						rem[j] = BigInteger.Subtract(rem[j], BigInteger.Multiply(quotient[i], rightCoeffs[j - i]));
+					}
+				}
+
+				// Turn array of coefficients into array of terms.
+				char symbol = 'X';
+				if (combinedSymbols.Any())
+				{
+					symbol = combinedSymbols.First();
+				}
+				List<Term> newTerms = new List<Term>();
+				int index = -1;
+				foreach (BigInteger q in quotient)
+				{
+					index++;
+
+					if (q != 0)
+					{
+						newTerms.Add(new Term(q, new Indeterminate[] { new Indeterminate(symbol, index) }));
+					}
+				}
+
+				return new MultivariatePolynomial(newTerms.ToArray());
+			}
+			else // All other cases (i.e. actually multivariate)
+			{
+				List<Term> newTermsList = new List<Term>();
+				List<Term> leftTermsList = CloneHelper<Term>.CloneCollection(left.Terms).ToList();
+				List<Term> rightTermsList = CloneHelper<Term>.CloneCollection(right.Terms).ToList();
+
+				foreach (Term rightTerm in right.Terms)
+				{
+					var matches = leftTermsList.Where(leftTerm => Term.ShareCommonFactor(leftTerm, rightTerm)).ToList();
+					if (matches.Any())
+					{
+						foreach (Term matchTerm in matches)
 						{
-							if (!newTermsList.Any(lt => lt.Equals(quotient)))
+							leftTermsList.Remove(matchTerm);
+							Term quotient = Term.Divide(matchTerm, rightTerm);
+							if (quotient != Term.Empty)
 							{
-								newTermsList.Add(quotient);
+								if (!newTermsList.Any(lt => lt.Equals(quotient)))
+								{
+									newTermsList.Add(quotient);
+								}
 							}
 						}
 					}
+					else
+					{
+						///newTermsList.Add(rightTerm);
+					}
 				}
-				else
-				{
-					///newTermsList.Add(rightTerm);
-				}
+				MultivariatePolynomial result = new MultivariatePolynomial(newTermsList.ToArray());
+				return result;
 			}
-			MultivariatePolynomial result = new MultivariatePolynomial(newTermsList.ToArray());
-			return result;
 		}
 
 		#endregion
@@ -508,7 +628,7 @@ namespace ExtendedArithmetic
 			string termString = string.Empty;
 			string result = string.Empty;
 
-			result = string.Join(" + ", Terms.Reverse().Select(trm => trm.ToString()));
+			result = string.Join(" + ", Terms.Select(trm => trm.ToString()));
 			result = result.Replace(" + -", " - ");
 
 			return result;
