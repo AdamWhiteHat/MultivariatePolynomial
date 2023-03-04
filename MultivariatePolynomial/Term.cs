@@ -8,7 +8,7 @@ namespace ExtendedArithmetic
 {
 	public class Term : ICloneable<Term>, IEquatable<Term>, IEqualityComparer<Term>
 	{
-		public BigInteger CoEfficient { get; }
+		public BigInteger CoEfficient { get; set; }
 		public Indeterminate[] Variables { get; private set; }
 		public int Degree { get { return Variables.Any() ? Variables.Select(v => v.Exponent).Sum() : 0; } }
 
