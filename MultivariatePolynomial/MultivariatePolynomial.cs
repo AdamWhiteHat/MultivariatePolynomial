@@ -392,53 +392,51 @@ namespace ExtendedArithmetic
 					return results;
 				}
 
-				var leadingCoeffQ = remainingPoly.Terms.First().CoEfficient;
-				var constantCoeffP = remainingPoly.Terms.Last().CoEfficient;
-
-				var constantDivisors =
-					BigIntegerExtensionMethods.GetAllDivisors(constantCoeffP)
-											  //.SelectMany(n => new BigInteger[] { n, BigInteger.Negate(n) })
-											  .ToList();
-
-				var leadingDivisors =
-					BigIntegerExtensionMethods.GetAllDivisors(leadingCoeffQ)
-											  .SelectMany(n => new BigInteger[] { n, BigInteger.Negate(n) })
-											  .ToList();
-
-				// <(denominator/numerator), numerator, denominator>
-				List<Tuple<double, BigInteger, BigInteger>> candidates =
-					constantDivisors.SelectMany(n => leadingDivisors.SelectMany(d =>
-					{
-						List<Tuple<double, BigInteger, BigInteger>> selected = new List<Tuple<double, BigInteger, BigInteger>>();
-						BigInteger num = n;
-						BigInteger denom = d;
-
-						double quotient = (double)num / (double)denom;
-						selected.Add(new Tuple<double, BigInteger, BigInteger>(quotient, num, denom));
-						selected.Add(new Tuple<double, BigInteger, BigInteger>(-quotient, num, denom));
-
-						return selected;
-					})).ToList();
-				
-				candidates = candidates.OrderByDescending(tup => Math.Sign(tup.Item1 * (double)tup.Item3))
-									   .ThenByDescending(tup => tup.Item3)
-									   .ThenByDescending(tup => tup.Item1 * (double)tup.Item3)
-									   .ToList();
-
-				List<Tuple<double, BigInteger, BigInteger>> roots = candidates.Where(x => remainingPoly.Evaluate(new List<Tuple<char, double>>() { new Tuple<char, double>(symbol, x.Item1) }) == 0.0d).ToList();
-
-				var factorStrings_Wrong = roots.Select(tup => $"{tup.Item3}*{symbol} {((tup.Item2).Sign == -1 ? "-" : "+")} {BigInteger.Abs(tup.Item2)}").ToList();
-				var factorStrings = roots.Select(tup => $"{tup.Item3}*{symbol} {(BigInteger.Negate(tup.Item2).Sign == -1 ? "-" : "+")} {BigInteger.Abs(tup.Item2)}").ToList();
-
-				List<MultivariatePolynomial> factors = factorStrings.Select(str => MultivariatePolynomial.Parse(str)).ToList();
-
-				foreach (MultivariatePolynomial factor in factors)
+				while (remainingPoly.Degree > 0)
 				{
-					remainingPoly = Divide(remainingPoly, factor);
-					results.Add(factor);
+					var leadingCoeffQ = remainingPoly.Terms.First().CoEfficient;
+					var constantCoeffP = remainingPoly.Terms.Last().CoEfficient;
 
-					if (remainingPoly.Degree <= 0)
+					var constantDivisors = BigIntegerExtensionMethods.GetAllDivisors(constantCoeffP).ToList();
+					var leadingDivisors = BigIntegerExtensionMethods.GetAllDivisors(leadingCoeffQ).ToList();
+
+					// <(denominator/numerator), numerator, denominator>
+					List<Tuple<double, BigInteger, BigInteger>> candidates =
+						constantDivisors.SelectMany(n => leadingDivisors.SelectMany(d =>
+						{
+							List<Tuple<double, BigInteger, BigInteger>> selected = new List<Tuple<double, BigInteger, BigInteger>>();
+							BigInteger num1 = n;
+							BigInteger num2 = BigInteger.Negate(n);
+							BigInteger denom = d;
+
+							double quotient1 = (double)num1 / (double)denom;
+							double quotient2 = (double)num2 / (double)denom;
+							selected.Add(new Tuple<double, BigInteger, BigInteger>(quotient1, num1, denom));
+							selected.Add(new Tuple<double, BigInteger, BigInteger>(quotient2, num2, denom));
+
+							return selected;
+						})).ToList();
+
+					candidates = candidates.OrderBy(tup => Math.Abs(tup.Item1))
+										   .ThenByDescending(tup => Math.Sign(tup.Item1))
+										   .ToList();
+
+					foreach (Tuple<double, BigInteger, BigInteger> candidate in candidates)
 					{
+						double evalResult = remainingPoly.Evaluate(new List<Tuple<char, double>>() { new Tuple<char, double>(symbol, candidate.Item1) });
+						bool isRoot = (evalResult == 0.0d);
+
+						if (!isRoot)
+						{
+							continue;
+						}
+
+						string rootMonomial = $"{candidate.Item3}*{symbol} {(BigInteger.Negate(candidate.Item2).Sign == -1 ? "-" : "+")} {BigInteger.Abs(candidate.Item2)}";
+						MultivariatePolynomial factor = MultivariatePolynomial.Parse(rootMonomial);
+
+						remainingPoly = Divide(remainingPoly, factor);
+						results.Add(factor);
+
 						break;
 					}
 				}

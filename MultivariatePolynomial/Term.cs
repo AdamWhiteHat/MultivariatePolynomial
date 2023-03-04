@@ -95,8 +95,12 @@ namespace ExtendedArithmetic
 
 			BigInteger commonDivisors = terms.Select(trm => trm.CoEfficient).Aggregate(BigInteger.GreatestCommonDivisor);
 
-			char[] commonVariables = terms.Select(trm => trm.Variables.SelectMany(indt => Enumerable.Repeat(indt.Symbol, indt.Exponent)).OrderBy(c => c).ToList())
-				.Aggregate(Match<char>).ToArray();
+			char[] commonVariables = terms.Select(trm => trm.Variables.SelectMany(indt => Enumerable.Repeat(indt.Symbol, indt.Exponent))
+																				.OrderBy(c => c)
+																				.ToList()
+											)
+											.Aggregate(Match<char>)
+											.ToArray();
 
 			return new Tuple<BigInteger, char[]>(commonDivisors, commonVariables);
 		}
