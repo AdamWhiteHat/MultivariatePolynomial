@@ -14,6 +14,62 @@ namespace TestMultivariatePolynomial
 		public TestContext TestContext { get { return m_testContext; } set { m_testContext = value; } }
 
 		[TestMethod]
+		public void TestParse000()
+		{
+			string[] toTest = new string[] {
+				"-0",
+				"0",
+				"1",
+				"-1",
+				"X",
+				"-X",
+				"-X^1",
+				"X^1",
+				"1*X^1",
+				"-1*X^1",
+				"-X^0",
+				"X^0",
+				"1*X^0",
+				"-1*X^0",
+				"-1*X + 1",
+				"-1*X - 1",
+				"1*X - 1",
+				"1*X + 1",
+				"-1*X - 1*X^0"
+			};
+
+			foreach (string s in toTest)
+			{
+				try
+				{
+					MultivariatePolynomial testPolynomial = MultivariatePolynomial.Parse(s);
+					TestContext.WriteLine($"Success parsing \"{s}\"");
+				}
+				catch (Exception ex)
+				{
+
+					Assert.Fail($"MultivariatePolynomial.Parse(string) Failed to parse the string \"{s}\"");
+					TestContext.WriteLine($"{ex.GetType().Name} caught: \"{ex.Message}\".");
+				}
+			}
+		}
+
+		[TestMethod]
+		public void TestParse_Constant()
+		{
+			MultivariatePolynomial minusOne = MultivariatePolynomial.Parse("-1");
+			MultivariatePolynomial one = MultivariatePolynomial.Parse("1");
+			MultivariatePolynomial two = MultivariatePolynomial.Parse("2");
+
+			Assert.IsFalse(minusOne.Terms.All(trm => trm.Variables.Any()), "minusOne.Terms.All(trm => trm.Variables.Any())");
+			Assert.IsFalse(one.Terms.All(trm => trm.Variables.Any()), "one.Terms.All(trm => trm.Variables.Any())");
+			Assert.IsFalse(two.Terms.All(trm => trm.Variables.Any()), "two.Terms.All(trm => trm.Variables.Any())");
+
+			Term term1 = Term.Parse("1");
+			Assert.IsFalse(term1.Variables.Any(), "Term.Parse(\"1\").Variables.Any()");
+		}
+
+		[TestMethod]
 		public void TestParse001()
 		{
 			string toTest = "X*Y*Z^2 + X*Y + X*Z + Y*Z - 1";
@@ -24,9 +80,32 @@ namespace TestMultivariatePolynomial
 			string actual = testPolynomial.ToString();//.Replace(" ", "");
 			bool isMatch = (expected == actual);
 			string passFailString = isMatch ? "PASS" : "FAIL";
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
+
 			TestContext.WriteLine($"Pass/Fail: \"{passFailString}\"");
 			Assert.AreEqual(expected, actual, $"MultivariatePolynomial.Parse(\"{toTest}\").ToString();");
+		}
+
+		[TestMethod]
+		public void TestParse002()
+		{
+			string expected1 = "6*Y"; // "10*Z^2*X*W + 5*Z^2*Y + 2*Z*X*U + Z*Y - 2*X - V + 6*Z + T^7 + 6";
+			string expected2 = "Y + 6";
+			string expected3 = "6*Y + 6";
+
+			MultivariatePolynomial result1 = MultivariatePolynomial.Multiply(MultivariatePolynomial.Parse("6"), MultivariatePolynomial.Parse("Y"));
+			MultivariatePolynomial result2 = MultivariatePolynomial.Add(MultivariatePolynomial.Parse("Y"), MultivariatePolynomial.Parse("6"));
+			MultivariatePolynomial result3 = MultivariatePolynomial.Add(result1, MultivariatePolynomial.Parse("6"));
+			string actual1 = result1.ToString();
+			string actual2 = result2.ToString();
+			string actual3 = result3.ToString();
+
+			Assert.AreEqual(expected1, actual1, $"MultivariatePolynomial.Multiply(6, Y) = {actual1}");
+			Assert.AreEqual(expected2, actual2, $"MultivariatePolynomial.Add(Y, 6) = {actual2}");
+			Assert.AreEqual(expected3, actual3, $"MultivariatePolynomial.Add(6*Y, 6) = {actual3}");
+
 		}
 
 		[TestMethod]
@@ -38,7 +117,8 @@ namespace TestMultivariatePolynomial
 
 			string expected = toTest;//.Replace(" ", "");
 			string actual = testPolynomial.ToString();//.Replace(" ", "");
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			TestContext.WriteLine($"Pass/Fail: \"{((expected == actual) ? "PASS" : "FAIL")}\"");
 			Assert.AreEqual(expected, actual, $"MultivariatePolynomial.Parse(\"{toTest}\").ToString();");
 		}
@@ -52,7 +132,9 @@ namespace TestMultivariatePolynomial
 
 			string expected = toTest;//.Replace(" ", "");
 			string actual = testPolynomial.ToString();//.Replace(" ", "");
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			TestContext.WriteLine($"Pass/Fail: \"{((expected == actual) ? "PASS" : "FAIL")}\"");
 			Assert.AreEqual(expected, actual, $"MultivariatePolynomial.Parse(\"{toTest}\").ToString();");
 		}
@@ -66,7 +148,9 @@ namespace TestMultivariatePolynomial
 
 			string expected = toTest;//.Replace(" ", "");
 			string actual = testPolynomial.ToString();//.Replace(" ", "");
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			TestContext.WriteLine($"Pass/Fail: \"{((expected == actual) ? "PASS" : "FAIL")}\"");
 			Assert.AreEqual(expected, actual, $"MultivariatePolynomial.Parse(\"{toTest}\").ToString();");
 		}
@@ -80,7 +164,9 @@ namespace TestMultivariatePolynomial
 
 			string expected = toTest;//.Replace(" ", "");
 			string actual = testPolynomial.ToString();//.Replace(" ", "");
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			TestContext.WriteLine($"Pass/Fail: \"{((expected == actual) ? "PASS" : "FAIL")}\"");
 			Assert.AreEqual(expected, actual, $"MultivariatePolynomial.Parse(\"{toTest}\").ToString();");
 		}
@@ -116,6 +202,9 @@ namespace TestMultivariatePolynomial
 			MultivariatePolynomial testPolynomial = new MultivariatePolynomial(new Term[] { term });
 			string expected = "0";
 			string actual = testPolynomial.ToString();
+
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Expected: \"{expected}\"; Actual: \"{actual}\"");
 		}
 
@@ -125,6 +214,9 @@ namespace TestMultivariatePolynomial
 			MultivariatePolynomial testPolynomial = new MultivariatePolynomial(new Term[0]);
 			string expected = "0";
 			string actual = testPolynomial.ToString();
+
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Expected: \"{expected}\"; Actual: \"{actual}\"");
 		}
 
@@ -134,6 +226,9 @@ namespace TestMultivariatePolynomial
 			MultivariatePolynomial testPolynomial = new MultivariatePolynomial(null);
 			string expected = "0";
 			string actual = testPolynomial.ToString();
+
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Expected: \"{expected}\"; Actual: \"{actual}\"");
 		}
 
@@ -199,7 +294,8 @@ namespace TestMultivariatePolynomial
 			BigInteger result = poly.Evaluate(indeterminants);
 			string actual = result.ToString();
 
-			TestContext.WriteLine($"Result: \"{actual}\".");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Evaluate({polyString}) where {string.Join(" and ", indeterminants.Select(tup => $"{tup.Item1} = {tup.Item2}"))}");
 		}
 
@@ -219,7 +315,8 @@ namespace TestMultivariatePolynomial
 			double result = poly.Evaluate(indeterminants);
 			string actual = result.ToString();
 
-			TestContext.WriteLine($"Result: \"{actual}\".");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Evaluate({polyString}) where {string.Join(" and ", indeterminants.Select(tup => $"{tup.Item1} = {tup.Item2}"))}");
 		}
 
@@ -239,7 +336,8 @@ namespace TestMultivariatePolynomial
 			Complex result = new Complex(Math.Round(evaluated.Real, 1), Math.Round(evaluated.Imaginary, 1));
 			string actual = result.ToString();
 
-			TestContext.WriteLine($"Result: \"{actual}\".");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Evaluate({polyString}) where x = sqrt(-1)");
 		}
 
@@ -260,7 +358,8 @@ namespace TestMultivariatePolynomial
 
 			string actual = poly.ToString();
 
-			TestContext.WriteLine($"Result: \"{actual}\".");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: Monomial Ordering");
 		}
 	}

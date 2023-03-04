@@ -11,7 +11,8 @@ namespace ExtendedArithmetic
 		public char Symbol { get; }
 		public int Exponent { get; }
 
-		private BigInteger? IndeterminateValue { get; set; }
+		internal static Indeterminate[] Empty = new Indeterminate[0];
+		internal static Indeterminate[] Zero = new Indeterminate[] { new Indeterminate('X', 0) };
 
 		private UnicodeCategory[] AllowedSymbolCategories = new UnicodeCategory[]
 		{
@@ -32,7 +33,6 @@ namespace ExtendedArithmetic
 			}
 			Symbol = symbol;
 			Exponent = exponent;
-			IndeterminateValue = null;
 		}
 
 		internal static Indeterminate Parse(string input)
@@ -68,12 +68,22 @@ namespace ExtendedArithmetic
 			return this.Equals(this, other);
 		}
 
-		public bool Equals(Indeterminate x, Indeterminate y)
+		public bool Equals(Indeterminate left, Indeterminate right)
 		{
-			if (x == null) { return (y == null) ? true : false; }
-			if (x.Symbol != y.Symbol) { return false; }
-			if (x.Exponent != y.Exponent) { return false; }
+			if (left == null) { return (right == null) ? true : false; }
+			if (left.Exponent == 0 && right.Exponent == 0) { return true; }
+			if (left.Symbol != right.Symbol) { return false; }
+			if (left.Exponent != right.Exponent) { return false; }
 			return true;
+		}
+
+		internal static bool AreCompatable(Indeterminate left, Indeterminate right)
+		{
+			if (left.Exponent == 0 || right.Exponent == 0)
+			{
+				return left.Exponent == right.Exponent;
+			}
+			return left.Symbol == right.Symbol;
 		}
 
 		public override bool Equals(object obj)
@@ -88,6 +98,10 @@ namespace ExtendedArithmetic
 
 		public override int GetHashCode()
 		{
+			if (Exponent == 0)
+			{
+				return new Tuple<char, int>('X', 0).GetHashCode();
+			}
 			return new Tuple<char, int>(Symbol, Exponent).GetHashCode();
 		}
 

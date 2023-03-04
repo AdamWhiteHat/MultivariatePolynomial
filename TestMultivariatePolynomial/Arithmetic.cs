@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ExtendedArithmetic;
+using System.Linq;
 
 namespace TestMultivariatePolynomial
 {
@@ -26,7 +27,8 @@ namespace TestMultivariatePolynomial
 			MultivariatePolynomial sum = MultivariatePolynomial.Add(polyAugend, polyAddend);
 			string actual = sum.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Add({augend}, {addend});");
 		}
 
@@ -44,7 +46,8 @@ namespace TestMultivariatePolynomial
 			MultivariatePolynomial sum = MultivariatePolynomial.Add(polyAugend, polyAddend);
 			string actual = sum.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Add({augend}, {addend});");
 		}
 
@@ -62,7 +65,8 @@ namespace TestMultivariatePolynomial
 			MultivariatePolynomial difference = MultivariatePolynomial.Subtract(polyMinuend, polySubtrahend);
 			string actual = difference.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Subtract: ({minuend}) - ({subtrahend})");
 		}
 
@@ -81,7 +85,8 @@ namespace TestMultivariatePolynomial
 			MultivariatePolynomial difference = MultivariatePolynomial.Subtract(polyMinuend, polySubtrahend);
 			string actual = difference.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Subtract: ({minuend}) - ({subtrahend})");
 		}
 
@@ -99,7 +104,8 @@ namespace TestMultivariatePolynomial
 			MultivariatePolynomial difference = MultivariatePolynomial.Subtract(polyMinuend, polySubtrahend);
 			string actual = difference.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Subtract: ({minuend}) - ({subtrahend})");
 		}
 
@@ -117,7 +123,8 @@ namespace TestMultivariatePolynomial
 			MultivariatePolynomial difference = MultivariatePolynomial.Subtract(polyMinuend, polySubtrahend);
 			string actual = difference.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Subtract: ({minuend}) - ({subtrahend})");
 		}
 
@@ -135,7 +142,8 @@ namespace TestMultivariatePolynomial
 			MultivariatePolynomial difference = MultivariatePolynomial.Subtract(polyMinuend, polySubtrahend);
 			string actual = difference.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Subtract: ({minuend}) - ({subtrahend})");
 		}
 
@@ -153,8 +161,55 @@ namespace TestMultivariatePolynomial
 			MultivariatePolynomial difference = MultivariatePolynomial.Subtract(polyMinuend, polySubtrahend);
 			string actual = difference.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Subtract: ({minuend}) - ({subtrahend})");
+		}
+
+		[TestMethod]
+		public void TestSubtract6()
+		{
+			string dividend = "X^3 + 7*X^2 + 14*X + 8";
+			string unit = "X + 1";
+
+			string expectedQuotient = "X^2 + 6*X + 8";
+			string expected = "X^2 + 2";
+
+			MultivariatePolynomial polyDividend = MultivariatePolynomial.Parse(dividend);
+			MultivariatePolynomial polyUnit = MultivariatePolynomial.Parse(unit);
+			MultivariatePolynomial quotient = MultivariatePolynomial.Parse(expectedQuotient);
+			//MultivariatePolynomial test = MultivariatePolynomial.Add(polyMinuend, neg);
+
+			MultivariatePolynomial specialQuotient = MultivariatePolynomial.Divide(polyDividend, polyUnit);
+			MultivariatePolynomial difference = MultivariatePolynomial.Subtract(specialQuotient, polyUnit);
+			difference = MultivariatePolynomial.Subtract(difference, polyUnit);
+			difference = MultivariatePolynomial.Subtract(difference, polyUnit);
+			difference = MultivariatePolynomial.Subtract(difference, polyUnit);
+			difference = MultivariatePolynomial.Subtract(difference, polyUnit);
+			difference = MultivariatePolynomial.Subtract(difference, polyUnit);
+
+
+			//MultivariatePolynomial runningTotal = polyMinuend.Clone();
+			//
+			//TestContext.WriteLine($"{runningTotal}");
+			//TestContext.WriteLine($"{(runningTotal = MultivariatePolynomial.Subtract(runningTotal, polySubtrahend))}");
+			//TestContext.WriteLine($"{(runningTotal = MultivariatePolynomial.Subtract(runningTotal, polySubtrahend))}");
+			//TestContext.WriteLine($"{(runningTotal = MultivariatePolynomial.Subtract(runningTotal, polySubtrahend))}");
+			//TestContext.WriteLine($"{(runningTotal = MultivariatePolynomial.Subtract(runningTotal, polySubtrahend))}");
+			//TestContext.WriteLine($"{(runningTotal = MultivariatePolynomial.Subtract(runningTotal, polySubtrahend))}");
+			//TestContext.WriteLine($"{(runningTotal = MultivariatePolynomial.Subtract(runningTotal, polySubtrahend))}");
+			//TestContext.WriteLine("");
+			//TestContext.WriteLine("");
+
+			string actual = difference.ToString();
+
+			TestContext.WriteLine($"Difference: {difference}");
+
+			TestContext.WriteLine("");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
+			Assert.AreEqual(expected, actual, $"A strange edge-case situation: {dividend} / {unit} = 'special' quotient who's constant has the variable X.\nWhereas a polynomial from parse has no such variable for the constant.\nThis becomes noticeable if we subtract a constant from the 'special' polynomial form:\nThe result will appear to have two constants!\nObserve:\n{expectedQuotient} SUBTRACT {unit}\n= {difference}.");
+
 		}
 
 		[TestMethod]
@@ -171,7 +226,8 @@ namespace TestMultivariatePolynomial
 
 			string actual = polyProdcut.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Multiply({lhs}, {rhs});");
 		}
 
@@ -189,7 +245,8 @@ namespace TestMultivariatePolynomial
 
 			string actual = polyProdcut.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Multiply({lhs}, {rhs});");
 		}
 
@@ -207,7 +264,8 @@ namespace TestMultivariatePolynomial
 			MultivariatePolynomial quotient = MultivariatePolynomial.Divide(polyDivedend, polyDivisor);
 			string actual = quotient.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Divide({dividend}, {divisor});");
 		}
 
@@ -225,7 +283,8 @@ namespace TestMultivariatePolynomial
 			MultivariatePolynomial quotient = MultivariatePolynomial.Divide(polyDivedend, polyDivisor);
 			string actual = quotient.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Divide({dividend}, {divisor});");
 		}
 
@@ -244,7 +303,8 @@ namespace TestMultivariatePolynomial
 			MultivariatePolynomial quotient = MultivariatePolynomial.Divide(polyDivedend, polyDivisor);
 			string actual = quotient.ToString();
 
-			TestContext.WriteLine($"Expected #1: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Divide({dividend}, {divisor});");
 		}
 
@@ -262,7 +322,8 @@ namespace TestMultivariatePolynomial
 			MultivariatePolynomial quotient = MultivariatePolynomial.Divide(polyDivedend, polyDivisor);
 			string actual = quotient.ToString();
 
-			TestContext.WriteLine($"Expected #2: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Divide({dividend}, {divisor});");
 		}
 
@@ -279,13 +340,13 @@ namespace TestMultivariatePolynomial
 			Indeterminate[] ind2 = new Indeterminate[0];
 
 			Term[] terms = new Term[] { new Term(2, ind1) };
-			MultivariatePolynomial pol1 = new MultivariatePolynomial(terms); // MultivariatePolynomial.Parse("2*a"); // new MultivariatePolynomial(terms);
+			MultivariatePolynomial pol1 = new MultivariatePolynomial(terms);
 
 			Term[] terms2 = new Term[] { new Term(2, ind2) };
-			MultivariatePolynomial pol2 = new MultivariatePolynomial(terms2); // MultivariatePolynomial.Parse("2"); // 
+			MultivariatePolynomial pol2 = new MultivariatePolynomial(terms2);
 
 			Term[] terms3 = new Term[] { new Term(1, ind1) };
-			MultivariatePolynomial pol3 = new MultivariatePolynomial(terms3); // MultivariatePolynomial.Parse("a");  // 
+			MultivariatePolynomial pol3 = new MultivariatePolynomial(terms3);
 
 			TestContext.WriteLine($"pol1 = {pol1}");
 			TestContext.WriteLine($"pol2 = {pol2}");
@@ -323,7 +384,8 @@ namespace TestMultivariatePolynomial
 
 			string actual = power.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Pow({polyBaseString}, {exponent});");
 		}
 
@@ -338,7 +400,8 @@ namespace TestMultivariatePolynomial
 
 			string actual = derivative.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GetDerivative({polyString});");
 		}
 
@@ -353,31 +416,14 @@ namespace TestMultivariatePolynomial
 
 			string actual = derivative.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GetDerivative({polyString});");
 		}
 
+
 		[TestMethod]
-		public void TestGCD1()
-		{
-			//throw new NotImplementedException();
-
-			string polyString1 = "X^4 + 8*X^3 + 21*X^2 + 22*X + 8";     //"X^4 + 8*X^3 + 21*X^2 + 22*X + 8";
-			string polyString2 = "X^3 + 6*X^2 + 11*X + 6";              //"X^3 + 6*X^2 + 11*X + 6";
-			string expected = "X^2 + 3*X + 2";                          //"X^2 + 3*X + 2";
-
-			MultivariatePolynomial poly1 = MultivariatePolynomial.Parse(polyString1);
-			MultivariatePolynomial poly2 = MultivariatePolynomial.Parse(polyString2);
-			MultivariatePolynomial gcd = MultivariatePolynomial.GCD(poly1, poly2);
-
-			string actual = gcd.ToString();
-
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
-			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GCD({polyString1}, {polyString2});");
-		}
-
-		//[TestMethod]
-		public void TestGCD2()
+		public void TestGCD_Multivarite_1()
 		{
 			//throw new NotImplementedException();
 
@@ -391,12 +437,13 @@ namespace TestMultivariatePolynomial
 
 			string actual = gcd.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GCD({polyString1}, {polyString2});");
 		}
 
 		[TestMethod]
-		public void TestGCD3()
+		public void TestGCD_Multivarite_2()
 		{
 			//throw new NotImplementedException();
 
@@ -410,12 +457,13 @@ namespace TestMultivariatePolynomial
 
 			string actual = gcd.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GCD({polyString1}, {polyString2});");
 		}
 
 		[TestMethod]
-		public void TestGCD4()
+		public void TestGCD_Multivarite_3()
 		{
 			//throw new NotImplementedException();
 
@@ -429,7 +477,8 @@ namespace TestMultivariatePolynomial
 
 			string actual = gcd.ToString();
 
-			TestContext.WriteLine($"Expected: \"{expected}\"; Actual: \"{actual}\"");
+			TestContext.WriteLine($"Expected: \"{expected}\"");
+			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GCD({polyString1}, {polyString2});");
 		}
 
@@ -453,12 +502,18 @@ namespace TestMultivariatePolynomial
 			string expecting2 = "6*X + 1";
 			string expecting3 = "12*Y + 1";
 			//string expecting4 = "";
-			//string expecting5 = "";		
+			//string expecting5	= "";
+
+			MultivariatePolynomial result1 = MultivariatePolynomial.Pow(indeterminateX, 0);
+			MultivariatePolynomial result2 = MultivariatePolynomial.Pow(indeterminateX, 1);
+			MultivariatePolynomial result3 = indeterminateX.FunctionalComposition(new List<Tuple<char, MultivariatePolynomial>>() { new Tuple<char, MultivariatePolynomial>('X', even) });
 
 
-			string actual1 = MultivariatePolynomial.Pow(indeterminateX, 0).ToString();
-			string actual2 = MultivariatePolynomial.Pow(indeterminateX, 1).ToString();
-			string actual3 = indeterminateX.FunctionalComposition(new List<Tuple<char, MultivariatePolynomial>>() { new Tuple<char, MultivariatePolynomial>('X', even) }).ToString();
+			//TestContext.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result3,Formatting.Indented));
+
+			string actual1 = result1.ToString();
+			string actual2 = result2.ToString();
+			string actual3 = result3.ToString();
 			//string actual4 = composition4.ToString();
 			//string actual5 = composition5.ToString();
 

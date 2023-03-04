@@ -12,8 +12,8 @@ namespace ExtendedArithmetic
 		public Indeterminate[] Variables { get; private set; }
 		public int Degree { get { return Variables.Any() ? Variables.Select(v => v.Exponent).Sum() : 0; } }
 
-		public static Term Empty = new Term(BigInteger.Zero, new Indeterminate[0]);
-		internal static Term Zero = new Term(BigInteger.Zero, new Indeterminate[] { new Indeterminate('X', 0) });
+		public static Term Empty = new Term(BigInteger.Zero, Indeterminate.Empty);
+		public static Term Zero = new Term(BigInteger.Zero, Indeterminate.Zero);
 
 		#region Constructor & Parse
 
@@ -46,6 +46,11 @@ namespace ExtendedArithmetic
 
 			Indeterminate[] variables = parts.Select(str => Indeterminate.Parse(str)).ToArray();
 
+			if (!variables.Any())
+			{
+				variables = Indeterminate.Empty;
+			}
+
 			return new Term(coefficient, variables);
 		}
 
@@ -60,10 +65,6 @@ namespace ExtendedArithmetic
 				throw new ArgumentNullException();
 			}
 			if (!left.Variables.Any(lv => right.Variables.Any(rv => rv.Equals(lv))))
-			{
-				return false;
-			}
-			if (right.CoEfficient == 0 || left.CoEfficient == 0)
 			{
 				return false;
 			}
@@ -124,9 +125,19 @@ namespace ExtendedArithmetic
 			return results;
 		}
 
-		internal static bool AreIdentical(Term left, Term right)
+		internal static bool HasIdenticalIndeterminates(Term left, Term right)
 		{
-			if (left == null || right == null) { throw new ArgumentNullException(); }
+			if (left == null)
+			{
+				if (right == null) { return true; }
+				throw new ArgumentNullException();
+			}
+
+			if (left.Degree == 0 && right.Degree == 0)
+			{
+				return true;
+			}
+
 			if (left.Variables.Length != right.Variables.Length) { return false; }
 
 			int index = 0;
@@ -140,19 +151,20 @@ namespace ExtendedArithmetic
 
 		internal bool HasVariables()
 		{
-			return Variables.Any();
+			if (!Variables.Any())
+			{
+				return false;
+			}
+			if (Variables.Length == 1 && Variables[0].Exponent == 0)
+			{
+				return false;
+			}
+			return true;
 		}
 
 		internal int VariableCount()
 		{
-			if (!HasVariables())
-			{
-				return 0;
-			}
-			else
-			{
-				return Variables.Length;
-			}
+			return Variables.Any() ? Variables.Where(v => v.Exponent != 0).Count() : 0;
 		}
 
 		#endregion
@@ -161,10 +173,10 @@ namespace ExtendedArithmetic
 
 		public static Term Add(Term left, Term right)
 		{
-			if (!AreIdentical(left, right))
+			if (!HasIdenticalIndeterminates(left, right))
 			{
-				//throw new ArgumentException("Terms are incompatable for adding; Their indeterminates must match.");
-				return Empty;
+				throw new ArgumentException("Terms are incompatable for adding; Their indeterminates must match.");
+				//return Empty;
 			}
 			return new Term(BigInteger.Add(left.CoEfficient, right.CoEfficient), left.Variables);
 		}
@@ -188,7 +200,7 @@ namespace ExtendedArithmetic
 
 			foreach (var leftVar in left.Variables)
 			{
-				var matches = rightVariables.Where(indt => indt.Symbol == leftVar.Symbol).ToList();
+				var matches = rightVariables.Where(indt => Indeterminate.AreCompatable(indt, leftVar)).ToList();
 				if (matches.Any())
 				{
 					foreach (var rightMatch in matches)
@@ -267,7 +279,13 @@ namespace ExtendedArithmetic
 		{
 			if (x == null) { return (y == null) ? true : false; }
 			if (x.CoEfficient != y.CoEfficient) { return false; }
-			if (!x.Variables.Any()) { return (!y.Variables.Any()) ? true : false; }
+
+
+			if (!x.Variables.Any() || (x.Variables.Length == 1 && x.Variables[0].Exponent == 0))
+			{
+				return (!y.Variables.Any() || (y.Variables.Length == 1 && y.Variables[0].Exponent == 0));
+			}
+
 			if (x.Variables.Length != y.Variables.Length) { return false; }
 
 			int index = 0;

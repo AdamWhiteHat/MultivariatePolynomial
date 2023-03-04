@@ -128,10 +128,13 @@ namespace ExtendedArithmetic
 						.Select(indetrmnt =>
 							indeterminateValues.Where(tup => tup.Item1 == indetrmnt.Symbol)
 											  .Select(tup => BigInteger.Pow(tup.Item2, indetrmnt.Exponent))
-											  .Single()
+											  .FirstOrDefault()
 						);
 
-					termValue = BigInteger.Multiply(termValue, variableValues.Aggregate(BigInteger.Multiply));
+					if (variableValues.Any())
+					{
+						termValue = BigInteger.Multiply(termValue, variableValues.Aggregate(BigInteger.Multiply));
+					}
 				}
 
 				result = BigInteger.Add(result, termValue);
@@ -153,10 +156,13 @@ namespace ExtendedArithmetic
 						.Select(indetrmnt =>
 							indeterminateValues.Where(tup => tup.Item1 == indetrmnt.Symbol)
 											  .Select(tup => Math.Pow(tup.Item2, indetrmnt.Exponent))
-											  .Single()
+											  .FirstOrDefault()
 						);
 
-					termValue *= variableValues.Aggregate((l, r) => l * r);
+					if (variableValues.Any())
+					{
+						termValue *= variableValues.Aggregate((l, r) => l * r);
+					}
 				}
 
 				result += termValue;
@@ -178,10 +184,13 @@ namespace ExtendedArithmetic
 						.Select(indetrmnt =>
 							indeterminateValues.Where(tup => tup.Item1 == indetrmnt.Symbol)
 											  .Select(tup => Complex.Pow(tup.Item2, (double)indetrmnt.Exponent))
-											  .Single()
+											  .FirstOrDefault()
 						);
 
-					termValue *= variableValues.Aggregate((l, r) => l * r);
+					if (variableValues.Any())
+					{
+						termValue *= variableValues.Aggregate((l, r) => l * r);
+					}
 				}
 
 				result += termValue;
@@ -274,32 +283,171 @@ namespace ExtendedArithmetic
 			// var leftGCD = Term.GetCommonDivisors(left.Terms);
 			// var rightGCD = Term.GetCommonDivisors(right.Terms);
 
-			List<Term> newTermsList = new List<Term>();
-			List<Term> leftTermsList = CloneHelper<Term>.CloneCollection(left.Terms).ToList();
+			if (left == null) throw new ArgumentNullException(nameof(left));
+			if (right == null) throw new ArgumentNullException(nameof(right));
 
-			foreach (Term rightTerm in right.Terms)
+			List<char> leftSymbols = left.Terms.SelectMany(t => t.Variables.Where(v => v.Exponent > 0).Select(v => v.Symbol)).Distinct().ToList();
+			List<char> rightSymbols = right.Terms.SelectMany(t => t.Variables.Where(v => v.Exponent > 0).Select(v => v.Symbol)).Distinct().ToList();
+			List<char> combinedSymbols = leftSymbols.Concat(rightSymbols).Distinct().ToList();
+
+			// If polynomial is actually univariate
+			if (combinedSymbols.Count <= 1)
 			{
-				var commonDivisorsList = leftTermsList.Select(trm => Term.GetCommonDivisors(trm, rightTerm)).ToList();
-				var matches = leftTermsList.Where(leftTerm => Term.ShareCommonFactor(leftTerm, rightTerm)).ToList();
-				if (matches.Any())
+				List<MultivariatePolynomial> leftFactors = Factor(left);
+				List<MultivariatePolynomial> rightFactors = Factor(right);
+
+				Console.WriteLine("Left.Factors():");
+				Console.WriteLine(string.Join(Environment.NewLine, leftFactors));
+				Console.WriteLine("");
+
+				Console.WriteLine("Right.Factors():");
+				Console.WriteLine(string.Join(Environment.NewLine, rightFactors));
+				Console.WriteLine();
+
+
+				List<MultivariatePolynomial> smaller = leftFactors;
+				List<MultivariatePolynomial> larger = rightFactors;
+				if (leftFactors.Count > rightFactors.Count)
 				{
-					foreach (Term matchTerm in matches)
+					smaller = rightFactors;
+					larger = leftFactors;
+				}
+
+				List<MultivariatePolynomial> common = new List<MultivariatePolynomial>();
+				foreach (var factor in smaller)
+				{
+					if (larger.Contains(factor))
 					{
-						leftTermsList.Remove(matchTerm);
-						Term quotient = Term.Divide(matchTerm, rightTerm);
-						if (quotient != Term.Empty)
+						common.Add(factor);
+					}
+				}
+
+				MultivariatePolynomial product = MultivariatePolynomial.Parse("1");
+
+				foreach (var poly in common)
+				{
+					product = MultivariatePolynomial.Multiply(product, poly);
+				}
+
+				return product;
+			}
+			else
+			{
+				List<Term> newTermsList = new List<Term>();
+				List<Term> leftTermsList = CloneHelper<Term>.CloneCollection(left.Terms).ToList();
+
+				foreach (Term rightTerm in right.Terms)
+				{
+					var commonDivisorsList = leftTermsList.Select(trm => Term.GetCommonDivisors(trm, rightTerm)).ToList();
+					var matches = leftTermsList.Where(leftTerm => Term.ShareCommonFactor(leftTerm, rightTerm)).ToList();
+					if (matches.Any())
+					{
+						foreach (Term matchTerm in matches)
 						{
-							//if (!newTermsList.Any(lt => lt.Equals(quotient)))
-							//{
-							newTermsList.Add(quotient);
-							//}
+							leftTermsList.Remove(matchTerm);
+							Term quotient = Term.Divide(matchTerm, rightTerm);
+							if (quotient != Term.Empty)
+							{
+								//if (!newTermsList.Any(lt => lt.Equals(quotient)))
+								//{
+								newTermsList.Add(quotient);
+								//}
+							}
 						}
 					}
 				}
-			}
 
-			MultivariatePolynomial result = new MultivariatePolynomial(newTermsList.ToArray());
-			return result;
+				MultivariatePolynomial result = new MultivariatePolynomial(newTermsList.ToArray());
+				return result;
+			}
+		}
+
+		/// <summary>
+		/// Factors the specified polynomial.
+		/// </summary>
+		public static List<MultivariatePolynomial> Factor(MultivariatePolynomial polynomial)
+		{
+			if (polynomial == null) throw new ArgumentNullException(nameof(polynomial));
+
+			List<MultivariatePolynomial> results = new List<MultivariatePolynomial>();
+
+			List<char> symbols = polynomial.Terms.SelectMany(t => t.Variables.Where(v => v.Exponent > 0).Select(v => v.Symbol)).Distinct().ToList();
+			if (symbols.Count >= 1) // Rational root theorem, essentially
+			{
+				char symbol = symbols.First();
+
+				MultivariatePolynomial remainingPoly = polynomial.Clone();
+
+				IEnumerable<BigInteger> coefficients = remainingPoly.Terms.Select(trm => trm.CoEfficient);
+				BigInteger gcd = coefficients.Aggregate(BigInteger.GreatestCommonDivisor);
+				if (gcd > 1)
+				{
+					MultivariatePolynomial gcdPoly = MultivariatePolynomial.Parse(gcd.ToString());
+					results.Add(gcdPoly);
+					remainingPoly = Divide(remainingPoly, gcdPoly);
+				}
+
+				if (remainingPoly.Degree == 0)
+				{
+					return results;
+				}
+
+				var leadingCoeffQ = remainingPoly.Terms.First().CoEfficient;
+				var constantCoeffP = remainingPoly.Terms.Last().CoEfficient;
+
+				var constantDivisors =
+					BigIntegerExtensionMethods.GetAllDivisors(constantCoeffP)
+											  //.SelectMany(n => new BigInteger[] { n, BigInteger.Negate(n) })
+											  .ToList();
+
+				var leadingDivisors =
+					BigIntegerExtensionMethods.GetAllDivisors(leadingCoeffQ)
+											  .SelectMany(n => new BigInteger[] { n, BigInteger.Negate(n) })
+											  .ToList();
+
+				// <(denominator/numerator), numerator, denominator>
+				List<Tuple<double, BigInteger, BigInteger>> candidates =
+					constantDivisors.SelectMany(n => leadingDivisors.SelectMany(d =>
+					{
+						List<Tuple<double, BigInteger, BigInteger>> selected = new List<Tuple<double, BigInteger, BigInteger>>();
+						BigInteger num = n;
+						BigInteger denom = d;
+
+						double quotient = (double)num / (double)denom;
+						selected.Add(new Tuple<double, BigInteger, BigInteger>(quotient, num, denom));
+						selected.Add(new Tuple<double, BigInteger, BigInteger>(-quotient, num, denom));
+
+						return selected;
+					})).ToList();
+				
+				candidates = candidates.OrderByDescending(tup => Math.Sign(tup.Item1 * (double)tup.Item3))
+									   .ThenByDescending(tup => tup.Item3)
+									   .ThenByDescending(tup => tup.Item1 * (double)tup.Item3)
+									   .ToList();
+
+				List<Tuple<double, BigInteger, BigInteger>> roots = candidates.Where(x => remainingPoly.Evaluate(new List<Tuple<char, double>>() { new Tuple<char, double>(symbol, x.Item1) }) == 0.0d).ToList();
+
+				var factorStrings_Wrong = roots.Select(tup => $"{tup.Item3}*{symbol} {((tup.Item2).Sign == -1 ? "-" : "+")} {BigInteger.Abs(tup.Item2)}").ToList();
+				var factorStrings = roots.Select(tup => $"{tup.Item3}*{symbol} {(BigInteger.Negate(tup.Item2).Sign == -1 ? "-" : "+")} {BigInteger.Abs(tup.Item2)}").ToList();
+
+				List<MultivariatePolynomial> factors = factorStrings.Select(str => MultivariatePolynomial.Parse(str)).ToList();
+
+				foreach (MultivariatePolynomial factor in factors)
+				{
+					remainingPoly = Divide(remainingPoly, factor);
+					results.Add(factor);
+
+					if (remainingPoly.Degree <= 0)
+					{
+						break;
+					}
+				}
+			}
+			else
+			{
+
+			}
+			return results;
 		}
 
 		public static MultivariatePolynomial Sum(IEnumerable<MultivariatePolynomial> polys)
@@ -352,7 +500,7 @@ namespace ExtendedArithmetic
 
 			foreach (Term rightTerm in right.Terms)
 			{
-				var match = leftTermsList.Where(leftTerm => Term.AreIdentical(leftTerm, rightTerm));
+				var match = leftTermsList.Where(leftTerm => Term.HasIdenticalIndeterminates(leftTerm, rightTerm));
 				if (match.Any())
 				{
 					Term matchTerm = match.Single();
@@ -393,7 +541,7 @@ namespace ExtendedArithmetic
 					Term newTerm = Term.Multiply(leftTerm, rightTerm);
 
 					// Combine like terms
-					var likeTerms = resultTerms.Where(trm => Term.AreIdentical(newTerm, trm));
+					var likeTerms = resultTerms.Where(trm => Term.HasIdenticalIndeterminates(newTerm, trm));
 					if (likeTerms.Any())
 					{
 						resultTerms = resultTerms.Except(likeTerms).ToList();
@@ -530,7 +678,18 @@ namespace ExtendedArithmetic
 
 					if (q != 0)
 					{
-						newTerms.Add(new Term(q, new Indeterminate[] { new Indeterminate(symbol, index) }));
+						Term newTerm;
+
+						if (index == 0)
+						{
+							newTerm = new Term(q, Indeterminate.Empty);
+						}
+						else
+						{
+							newTerm = new Term(q, new Indeterminate[] { new Indeterminate(symbol, index) });
+						}
+
+						newTerms.Add(newTerm);
 					}
 				}
 
@@ -542,7 +701,7 @@ namespace ExtendedArithmetic
 				List<Term> leftTermsList = CloneHelper<Term>.CloneCollection(left.Terms).ToList();
 				List<Term> rightTermsList = CloneHelper<Term>.CloneCollection(right.Terms).ToList();
 
-				foreach (Term rightTerm in right.Terms)
+				foreach (Term rightTerm in rightTermsList)
 				{
 					var matches = leftTermsList.Where(leftTerm => Term.ShareCommonFactor(leftTerm, rightTerm)).ToList();
 					if (matches.Any())
