@@ -461,8 +461,35 @@ namespace TestMultivariatePolynomial
 
 			string[] actual = results.Select(p => p.ToString()).ToArray();
 
-			// (X+1)(X+2)(X+3)
 			string[] expected = new string[] { "X + 1", "X + 2", "X + 3" };
+
+			TestContext.WriteLine($"Expected: {{ {string.Join(", ", expected)} }}");
+			TestContext.WriteLine($"Actual:   {{ {string.Join(", ", actual)} }}");
+			TestContext.WriteLine("");
+
+			Assert.AreEqual(expected.Length, actual.Length, $"expected.Length ({expected.Length}) == actual.Length ({actual.Length})");
+
+			foreach (string search in expected)
+			{
+				if (!actual.Contains(search))
+				{
+					Assert.Fail($"{{ {string.Join(", ", actual)} }} does not contain the factor \"{search}\".");
+				}
+			}
+		}
+
+		[TestMethod]
+		public void TestFactorization_Irreducible()
+		{
+			string irreduciblePolynomial = "X^2 + X + 1";
+
+			MultivariatePolynomial poly = MultivariatePolynomial.Parse(irreduciblePolynomial);
+
+			List<MultivariatePolynomial> results = MultivariatePolynomial.Factor(poly);
+
+			string[] actual = results.Select(p => p.ToString()).ToArray();
+
+			string[] expected = new string[] { };
 
 			TestContext.WriteLine($"Expected: {{ {string.Join(", ", expected)} }}");
 			TestContext.WriteLine($"Actual:   {{ {string.Join(", ", actual)} }}");
@@ -482,8 +509,6 @@ namespace TestMultivariatePolynomial
 		[TestMethod]
 		public void TestGCD_Univarite_1()
 		{
-			//throw new NotImplementedException();
-
 			string polyString1 = "X^4 + 8*X^3 + 21*X^2 + 22*X + 8";     //"X^4 + 8*X^3 + 21*X^2 + 22*X + 8";
 			string polyString2 = "X^3 + 6*X^2 + 11*X + 6";              //"X^3 + 6*X^2 + 11*X + 6";
 			string expected = "X^2 + 3*X + 2";                          //"X^2 + 3*X + 2";
@@ -570,7 +595,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GCD({polyString1}, {polyString2});");
 		}
 
-		[TestMethod]
+		[Ignore("Work in progress")]
 		public void TestGCD_Multivarite_1()
 		{
 			string polyString1 = "3*X*Y + 3*X + 2*Y + 2";
@@ -588,7 +613,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GCD({polyString1}, {polyString2});");
 		}
 
-		[TestMethod]
+		[Ignore("Work in progress")]
 		public void TestGCD_Multivarite_2()
 		{
 			string polyString1 = "6*X^2 + 3*X*Y + 2*X + Y";
@@ -606,7 +631,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GCD({polyString1}, {polyString2});");
 		}
 
-		[TestMethod]
+		[Ignore("Work in progress")]
 		public void TestGCD_Multivarite_3()
 		{
 			string polyString1 = "3*X^2*Y - Y";

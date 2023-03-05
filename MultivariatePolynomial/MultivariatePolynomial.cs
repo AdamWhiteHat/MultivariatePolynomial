@@ -392,8 +392,15 @@ namespace ExtendedArithmetic
 					return results;
 				}
 
+				int resultCount = -1;
+
 				while (remainingPoly.Degree > 0)
 				{
+					if (resultCount == results.Count)
+					{
+						break;
+					}
+
 					var leadingCoeffQ = remainingPoly.Terms.First().CoEfficient;
 					var constantCoeffP = remainingPoly.Terms.Last().CoEfficient;
 
@@ -420,6 +427,8 @@ namespace ExtendedArithmetic
 					candidates = candidates.OrderBy(tup => Math.Abs(tup.Item1))
 										   .ThenByDescending(tup => Math.Sign(tup.Item1))
 										   .ToList();
+
+					resultCount = results.Count;
 
 					foreach (Tuple<double, BigInteger, BigInteger> candidate in candidates)
 					{
