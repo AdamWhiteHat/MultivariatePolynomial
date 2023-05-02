@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using ExtendedArithmetic;
 using System.Linq;
 
 namespace TestMultivariatePolynomial
 {
-	[TestClass]
+	[TestFixture(Category = "TestArithmetic")]
 	public class Arithmetic
 	{
 		private TestContext m_testContext;
+		/// <exclude />
 		public TestContext TestContext { get { return m_testContext; } set { m_testContext = value; } }
 
-		[TestMethod]
+		[Test]
 		public void TestAdd()
 		{
 			string augend = "X^2 + 2*X - 1";
@@ -32,7 +33,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Add({augend}, {addend});");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestAddUnlikeTerms()
 		{
 			string augend = "X^2";
@@ -51,7 +52,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Add({augend}, {addend});");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestSubtractUnlikeTerms()
 		{
 			string minuend = "X^2";
@@ -71,7 +72,7 @@ namespace TestMultivariatePolynomial
 		}
 
 
-		[TestMethod]
+		[Test]
 		public void TestSubtract1()
 		{
 			string minuend = "3*X";
@@ -90,7 +91,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Subtract: ({minuend}) - ({subtrahend})");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestSubtract2()
 		{
 			string minuend = "36*X*Y + 6*X + 6*Y + 1";
@@ -109,7 +110,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Subtract: ({minuend}) - ({subtrahend})");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestSubtract3()
 		{
 			string minuend = "2*X^3 + 2*X - 1";
@@ -128,7 +129,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Subtract: ({minuend}) - ({subtrahend})");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestSubtract4()
 		{
 			string minuend = "3*X^2*Y^3 + 2*X^3*Y^2 + 6*X*Y^2 + 4*X^3 - 6*X^2*Y + 3*X*Y - 2*X^2 + 12*X - 6";
@@ -147,7 +148,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Subtract: ({minuend}) - ({subtrahend})");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestSubtract5()
 		{
 			string minuend = "504*X*Y*Z^2 + 216*X*Y - 42*X*Z^2 - 18*X + 84*Y*Z^2 + 36*Y - 7*Z^2 - 3";
@@ -166,7 +167,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Subtract: ({minuend}) - ({subtrahend})");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestSubtract6()
 		{
 			string dividend = "X^3 + 7*X^2 + 14*X + 8";
@@ -212,7 +213,7 @@ namespace TestMultivariatePolynomial
 
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestMultiply1()
 		{
 			string lhs = "6*X + 1";
@@ -231,7 +232,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Multiply({lhs}, {rhs});");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestMultiplySameSymbols()
 		{
 			string lhs = "6*X + 1";
@@ -250,7 +251,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Multiply({lhs}, {rhs});");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestDivide1()
 		{
 			string dividend = "36*X*Y + 6*X + 6*Y + 1";
@@ -269,7 +270,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Divide({dividend}, {divisor});");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestDivide2()
 		{
 			string dividend = "2*X*Y^2 + 3*X*Y + 4*Y^2 + 6*Y + 2*X + 4";
@@ -289,7 +290,7 @@ namespace TestMultivariatePolynomial
 		}
 
 
-		[TestMethod]
+		[Test]
 		public void TestDivide3()
 		{
 			string dividend = "X^4 + 8*X^3 + 21*X^2 + 22*X + 8";
@@ -308,7 +309,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Divide({dividend}, {divisor});");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestDivide4()
 		{
 			string dividend = "X^4 + 8*X^3 + 21*X^2 + 22*X + 8";
@@ -329,7 +330,7 @@ namespace TestMultivariatePolynomial
 
 
 
-		[TestMethod]
+		[Test]
 		public void TestDivide_UserSubmittedIssueNo1()
 		{
 			string expected1 = "1";
@@ -371,7 +372,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected3, actual3);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestPow()
 		{
 			string polyBaseString = "2*X*Y^2 - 1";
@@ -389,7 +390,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Pow({polyBaseString}, {exponent});");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestGetDerivative1()
 		{
 			string polyString = "132*X*Y + 77*X + 55*Y + 1";
@@ -405,7 +406,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GetDerivative({polyString});");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestGetDerivative2()
 		{
 			string polyString = "4*X^2*Y^4 - 4*X*Y^2 + 1";
@@ -422,7 +423,7 @@ namespace TestMultivariatePolynomial
 		}
 
 
-		[TestMethod]
+		[Test]
 		public void TestFactorization1()
 		{
 			string polyString = "X^4 + 8*X^3 + 21*X^2 + 22*X + 8";
@@ -450,7 +451,7 @@ namespace TestMultivariatePolynomial
 			}
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFactorization2()
 		{
 			string polyString = "X^3 + 6*X^2 + 11*X + 6";
@@ -478,7 +479,7 @@ namespace TestMultivariatePolynomial
 			}
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFactorization_Irreducible()
 		{
 			string irreduciblePolynomial = "X^2 + X + 1";
@@ -506,7 +507,7 @@ namespace TestMultivariatePolynomial
 			}
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestGCD_Univarite_1()
 		{
 			string polyString1 = "X^4 + 8*X^3 + 21*X^2 + 22*X + 8";     //"X^4 + 8*X^3 + 21*X^2 + 22*X + 8";
@@ -539,7 +540,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GCD({polyString1}, {polyString2});");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestGCD_Univarite_2()
 		{
 			string polyString1 = "X^5 + 25*X^4 + 230*X^3 + 950*X^2 + 1689*X + 945";
@@ -557,7 +558,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GCD({polyString1}, {polyString2});");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestGCD_Univarite_3()
 		{
 			string polyString1 = "X^5 + 9*X^4 + 29*X^3 + 43*X^2 + 30*X + 8";
@@ -649,7 +650,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.GCD({polyString1}, {polyString2});");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFunctionalComposition001()
 		{
 			MultivariatePolynomial indeterminateX = MultivariatePolynomial.Parse("6*X + 1");
@@ -689,7 +690,7 @@ namespace TestMultivariatePolynomial
 			//Assert.AreEqual(expecting5, actual5);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestFunctionalComposition002()
 		{
 			MultivariatePolynomial indeterminateX = MultivariatePolynomial.Parse("6*X + 1");

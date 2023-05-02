@@ -2,18 +2,18 @@
 using System.Linq;
 using System.Numerics;
 using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using ExtendedArithmetic;
 
 namespace TestMultivariatePolynomial
 {
-	[TestClass]
+	[TestFixture(Category = "TestCoreFunctionality")]
 	public class CoreFunctionality
 	{
 		private TestContext m_testContext;
 		public TestContext TestContext { get { return m_testContext; } set { m_testContext = value; } }
 
-		[TestMethod]
+		[Test]
 		public void TestParse000()
 		{
 			string[] toTest = new string[] {
@@ -54,7 +54,7 @@ namespace TestMultivariatePolynomial
 			}
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestParse_Constant()
 		{
 			MultivariatePolynomial minusOne = MultivariatePolynomial.Parse("-1");
@@ -69,7 +69,7 @@ namespace TestMultivariatePolynomial
 			Assert.IsFalse(term1.Variables.Any(), "Term.Parse(\"1\").Variables.Any()");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestParse001()
 		{
 			string toTest = "X*Y*Z^2 + X*Y + X*Z + Y*Z - 1";
@@ -88,7 +88,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"MultivariatePolynomial.Parse(\"{toTest}\").ToString();");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestParse002()
 		{
 			string expected1 = "6*Y"; // "10*Z^2*X*W + 5*Z^2*Y + 2*Z*X*U + Z*Y - 2*X - V + 6*Z + T^7 + 6";
@@ -108,7 +108,7 @@ namespace TestMultivariatePolynomial
 
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestParse_ConstantPolynomial001()
 		{
 			string toTest = "12";
@@ -123,7 +123,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"MultivariatePolynomial.Parse(\"{toTest}\").ToString();");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestParse_ConstantPolynomial002()
 		{
 			string toTest = "-12";
@@ -139,7 +139,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"MultivariatePolynomial.Parse(\"{toTest}\").ToString();");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestParse_ConstantPolynomial003()
 		{
 			string toTest = "X";
@@ -155,7 +155,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"MultivariatePolynomial.Parse(\"{toTest}\").ToString();");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestParse_ConstantPolynomial004()
 		{
 			string toTest = "-X";
@@ -171,7 +171,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"MultivariatePolynomial.Parse(\"{toTest}\").ToString();");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestParseNegativeLeadingCoefficient()
 		{
 			string polynomialExpected = "-8*X^2 - X + 8";
@@ -193,7 +193,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(secondTermExpected, secondTermActual, $"Expected: \"{secondTermExpected}\"; Actual: \"{secondTermActual}\"");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestInstantiateZeroCoefficient()
 		{
 			Indeterminate indt = new Indeterminate('X', 2);
@@ -208,7 +208,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Expected: \"{expected}\"; Actual: \"{actual}\"");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestInstantiateEmpty()
 		{
 			MultivariatePolynomial testPolynomial = new MultivariatePolynomial(new Term[0]);
@@ -220,7 +220,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Expected: \"{expected}\"; Actual: \"{actual}\"");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestInstantiateNull()
 		{
 			MultivariatePolynomial testPolynomial = new MultivariatePolynomial(null);
@@ -232,18 +232,18 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Expected: \"{expected}\"; Actual: \"{actual}\"");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestNumericIndeterminateSymbol()
 		{
-			Action instantiateSymbol = new Action(() =>
+			TestDelegate testDelegate = new TestDelegate(() =>
 			{
 				Indeterminate indeterminate = new Indeterminate('2', 1);
 			});
 
-			Assert.ThrowsException<ArgumentException>(instantiateSymbol);
+			Assert.Throws(typeof(ArgumentException), testDelegate);
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestParseAndToString()
 		{
 			string[] toTest = new string[]
@@ -278,7 +278,7 @@ namespace TestMultivariatePolynomial
 			}
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestEvaluate_BigInteger()
 		{
 			string expected = "8551120982818029391";
@@ -299,7 +299,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Evaluate({polyString}) where {string.Join(" and ", indeterminants.Select(tup => $"{tup.Item1} = {tup.Item2}"))}");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestEvaluate_Double()
 		{
 			string expected = "15565";
@@ -313,6 +313,7 @@ namespace TestMultivariatePolynomial
 			};
 
 			double result = poly.Evaluate(indeterminants);
+			result = Math.Round(result, 9);
 			string actual = result.ToString();
 
 			TestContext.WriteLine($"Expected: \"{expected}\"");
@@ -320,7 +321,7 @@ namespace TestMultivariatePolynomial
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Evaluate({polyString}) where {string.Join(" and ", indeterminants.Select(tup => $"{tup.Item1} = {tup.Item2}"))}");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestEvaluate_Complex()
 		{
 			string expected = "(0, 0)";
@@ -334,14 +335,17 @@ namespace TestMultivariatePolynomial
 
 			Complex evaluated = poly.Evaluate(indeterminants);
 			Complex result = new Complex(Math.Round(evaluated.Real, 1), Math.Round(evaluated.Imaginary, 1));
-			string actual = result.ToString();
+			string actual = result.ToString()
+									.Replace("<", "(")
+									.Replace(">", ")")
+									.Replace(";", ",");
 
 			TestContext.WriteLine($"Expected: \"{expected}\"");
 			TestContext.WriteLine($"Actual: \"{actual}\"");
 			Assert.AreEqual(expected, actual, $"Test of: MultivariatePolynomial.Evaluate({polyString}) where x = sqrt(-1)");
 		}
 
-		[TestMethod]
+		[Test]
 		public void TestMonomialOrdering()
 		{
 			string toParse = "3*X^2*Y^3 + 6*X* Y^4 + X^3*Y^2 + 4*X^5 - 6*X^2*Y + 3*X* Y*Z - 5*X^2 + 3*Y^3 + 24*X* Y - 4";
